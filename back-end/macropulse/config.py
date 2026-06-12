@@ -4,6 +4,12 @@
 
 import os
 
+from dotenv import load_dotenv
+
+# 与 backend 主服务一致：就近加载 back-end/.env（ANTHROPIC_API_KEY、AWS 凭证等）。
+# 从 back-end/ 运行 `python -m macropulse...` 时会找到该文件；未找到则静默跳过。
+load_dotenv()
+
 # S3 数据湖（与 analytics 复用同一 bucket / region）
 S3_BUCKET = os.getenv("MACRO_S3_BUCKET", os.getenv("ANALYTICS_S3_BUCKET", "fxlab-data-lake"))
 S3_REGION = os.getenv("MACRO_S3_REGION", os.getenv("ANALYTICS_S3_REGION", "ap-southeast-2"))

@@ -24,6 +24,10 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 
 import anthropic
+from dotenv import load_dotenv
+
+# ANTHROPIC_API_KEY 放在 back-end/.env，SDK 从环境变量读取
+load_dotenv()
 
 from macropulse import config
 from macropulse.diff import diff_statements, UNCHANGED
