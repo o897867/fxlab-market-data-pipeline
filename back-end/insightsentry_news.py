@@ -8,6 +8,7 @@ WebSocket 端点: wss://realtime.insightsentry.com/newsfeed
 """
 
 import asyncio
+import os
 import websockets
 import json
 import sqlite3
@@ -21,6 +22,17 @@ import re
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# 新闻摘要 LLM 配置：默认 DeepSeek（OpenAI 兼容接口，高频路径成本优先）。
+# 如需切回 OpenAI，整组覆盖三个环境变量即可：
+#   NEWS_LLM_BASE_URL=https://api.openai.com/v1
+#   NEWS_LLM_MODEL=gpt-4.1-mini
+#   并让 fapi.py 注入 OPENAI_API_KEY
+NEWS_LLM_BASE_URL = os.getenv("NEWS_LLM_BASE_URL", "https://api.deepseek.com/v1")
+NEWS_LLM_MODEL = os.getenv("NEWS_LLM_MODEL", "deepseek-v4-flash")
+# v4-flash 是推理模型：reasoning 也计入 completion tokens，上限必须给思考留足空间，
+# 否则 finish_reason=length 且正文为空（切回 gpt-4.1-mini 时 250 就够）
+NEWS_LLM_MAX_TOKENS = int(os.getenv("NEWS_LLM_MAX_TOKENS", "2048"))
 
 
 class NewsWebSocketClient:
@@ -265,8 +277,8 @@ class NewsWebSocketClient:
         }
 
     def get_reconnect_delay(self) -> float:
-        """计算重连延迟（指数退避）"""
-        delay = min(self.base_reconnect_delay * (2 ** self.reconnect_attempts), 300)
+        """计算重连延迟（指数退避，封顶300s；指数也封顶避免大整数运算）"""
+        delay = min(self.base_reconnect_delay * (2 ** min(self.reconnect_attempts, 10)), 300)
         return delay
 
     def check_rate_limit(self) -> bool:
@@ -464,8 +476,8 @@ class NewsWebSocketClient:
             # 如果没有内容，使用标题
             text_to_summarize = content if content else title
 
-            # 调用 OpenAI API
-            url = "https://api.openai.com/v1/chat/completions"
+            # 调用 LLM API（OpenAI 兼容协议，默认 DeepSeek，见模块顶部配置）
+            url = f"{NEWS_LLM_BASE_URL}/chat/completions"
             headers = {
                 "Authorization": f"Bearer {self.openai_api_key}",
                 "Content-Type": "application/json"
@@ -531,7 +543,7 @@ Respond ONLY with JSON:
                     user_content += f"\n\nIMPORTANT: Previous attempt did not include Chinese content. You MUST provide title_cn and summary_cn in Chinese (中文). This is attempt {attempt + 1} of {max_retries}."
 
                 payload = {
-                    "model": "gpt-4.1-mini",  # 使用更经济的模型
+                    "model": NEWS_LLM_MODEL,
                     "response_format": {"type": "json_object"},
                     "messages": [
                         {
@@ -544,7 +556,7 @@ Respond ONLY with JSON:
                         }
                     ],
                     "temperature": 0.3,
-                    "max_tokens": 250  # 稍微增加token限制以确保中文内容完整
+                    "max_tokens": NEWS_LLM_MAX_TOKENS
                 }
 
                 async with aiohttp.ClientSession() as session:
@@ -1021,9 +1033,12 @@ Respond ONLY with JSON:
 
             # 检查是否超过最大重连次数
             if self.reconnect_attempts >= self.max_reconnect_attempts:
-                logger.error(f"❌ Max reconnection attempts reached ({self.max_reconnect_attempts})")
-                self.is_running = False
-                break
+                # 不放弃：上游（如 InsightSentry 502）长时间故障后自动恢复时，
+                # 客户端必须还活着。按封顶退避（300s）无限重试，仅周期性告警。
+                if self.reconnect_attempts % 10 == 0:
+                    logger.warning(
+                        f"⚠️ News WS 已连续失败 {self.reconnect_attempts} 次，"
+                        f"继续按 {self.get_reconnect_delay():.0f}s 间隔重试")
 
             if not self.is_running:
                 logger.info("🛑 News WebSocket stopping, not reconnecting")

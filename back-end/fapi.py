@@ -116,20 +116,23 @@ async def lifespan(app: FastAPI):
 
                 # InsightSentry API Key (same as XAU)
                 insightsentry_key = "eyJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoic3V5aW5nY2luQGdtYWlsLmNvbSIsInBsYW4iOiJ1bHRyYSIsIm5ld3NmZWVkX2VuYWJsZWQiOnRydWUsIndlYnNvY2tldF9zeW1ib2xzIjo1LCJ3ZWJzb2NrZXRfY29ubmVjdGlvbnMiOjF9.6aA_ND-9NmZI2-8mILRJeZDLt9Y6skrtsNbzP0FeQVI"
-                openai_key = os.environ.get("OPENAI_API_KEY", "")
-                if not openai_key:
-                    logger.warning("⚠️  OPENAI_API_KEY not set, news summarization will fail")
+                # 新闻摘要已迁移至 DeepSeek（NEWS_LLM_KEY_ENV 可改回 OPENAI_API_KEY，
+                # 需与 insightsentry_news.py 顶部的 NEWS_LLM_BASE_URL/MODEL 配套切换）
+                llm_key_env = os.environ.get("NEWS_LLM_KEY_ENV", "DEEPSEEK_API_KEY")
+                llm_key = os.environ.get(llm_key_env, "")
+                if not llm_key:
+                    logger.warning(f"⚠️  {llm_key_env} not set, news summarization will fail")
 
                 news_client = NewsWebSocketClient(
                     api_key=insightsentry_key,
-                    openai_api_key=openai_key,
+                    openai_api_key=llm_key,
                     db_path=DATABASE_PATH,
                     news_callback=broadcast_news_to_clients
                 )
 
                 # Start news client in background
                 asyncio.create_task(news_client.start())
-                logger.info("✅ 金融新闻服务已启动 (InsightSentry + ChatGPT)")
+                logger.info("✅ 金融新闻服务已启动 (InsightSentry + DeepSeek)")
             except Exception as e:
                 logger.error(f"❌ 金融新闻服务初始化失败: {e}")
 
