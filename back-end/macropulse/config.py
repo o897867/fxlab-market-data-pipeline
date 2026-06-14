@@ -36,3 +36,12 @@ BACKFILL_YEARS = int(os.getenv("MACRO_BACKFILL_YEARS", "3"))
 EXTRACT_MODEL = os.getenv("MACRO_EXTRACT_MODEL", "claude-opus-4-8")
 SCORES_PREFIX = "analysis/macro/fed/scores"
 EXTRACTION_MANIFEST_KEY = "metadata/macro_extraction_manifest.json"
+
+# ---- 归因回测（鹰鸽分数 vs 声明后 XAU 实际反应）
+# 价格源：复用 backend 的 SQLite（xau_candles_1m 是权威最新副本）。
+# 仅 XAU 可用（无 DXY/US2Y）；XAU 1m 历史从 2025-10 起，只覆盖最近数次 FOMC。
+PRICE_DB_PATH = os.getenv("MACRO_PRICE_DB",
+                          os.path.join(os.path.dirname(os.path.dirname(__file__)), "shopback_data.db"))
+ATTRIBUTION_PREFIX = "analysis/macro/fed/attribution"
+# 事件窗口（分钟）。声明 14:00 ET 释放后的反应窗。
+ATTRIBUTION_WINDOWS_MIN = [15, 60, 1440]
