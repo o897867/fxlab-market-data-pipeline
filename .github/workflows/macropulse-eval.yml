@@ -1,0 +1,36 @@
+name: MacroPulse Eval
+
+# 跑 MacroPulse 的 hermetic 单测 + Tier-1 eval 回归（结构/校准）。
+# 全程不触网、不调 LLM、不连 S3——纯跑 committed golden 快照与内存夹具。
+# Tier-2 漂移测试（真实调 Claude API）默认跳过，需 MACRO_RUN_LLM_EVAL=1 显式开启。
+
+on:
+  push:
+    paths:
+      - "back-end/macropulse/**"
+      - "back-end/tests/macropulse/**"
+      - ".github/workflows/macropulse-eval.yml"
+  pull_request:
+    paths:
+      - "back-end/macropulse/**"
+      - "back-end/tests/macropulse/**"
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back-end
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install minimal deps
+        run: pip install pytest anthropic openai beautifulsoup4 requests boto3 python-dotenv
+      - name: MacroPulse hermetic suite + Tier-1 eval regression
+        env:
+          MACRO_RUN_LLM_EVAL: "0"   # Tier-2 漂移测试不在 CI 跑（需 key、有成本）
+        run: |
+          python -m pytest tests/macropulse/ -m "not llm" --no-cov -q
+          python -m macropulse.eval.cli check

@@ -1,0 +1,2618 @@
+[
+  {
+    "document_id": "fed_minutes_2021-01-27",
+    "doc_type": "minutes",
+    "meeting_date": "2021-01-27",
+    "overall_score": -3,
+    "dimensions": {
+      "inflation": {
+        "score": -3,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": -3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": -4,
+        "confidence": 0.92
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.9,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2021-03-17",
+    "doc_type": "minutes",
+    "meeting_date": "2021-03-17",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": -3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.86,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2021-04-28",
+    "doc_type": "minutes",
+    "meeting_date": "2021-04-28",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.88
+      },
+      "balance_sheet_qt": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": -2,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.83,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2021-06-16",
+    "doc_type": "minutes",
+    "meeting_date": "2021-06-16",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.82
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.78
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2021-07-28",
+    "doc_type": "minutes",
+    "meeting_date": "2021-07-28",
+    "overall_score": -1,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": -1,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.8,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2021-09-22",
+    "doc_type": "minutes",
+    "meeting_date": "2021-09-22",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.78
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.88
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": true,
+    "quote_violations": [
+      "labor"
+    ],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2021-11-03",
+    "doc_type": "minutes",
+    "meeting_date": "2021-11-03",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.78
+      }
+    },
+    "confidence_overall": 0.83,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2021-12-15",
+    "doc_type": "minutes",
+    "meeting_date": "2021-12-15",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 4,
+        "confidence": 0.95
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.92
+      }
+    },
+    "confidence_overall": 0.9,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2022-01-26",
+    "doc_type": "minutes",
+    "meeting_date": "2022-01-26",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.92
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": 4,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.9,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2022-03-16",
+    "doc_type": "minutes",
+    "meeting_date": "2022-03-16",
+    "overall_score": 4,
+    "dimensions": {
+      "inflation": {
+        "score": 4,
+        "confidence": 0.97
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.92
+      },
+      "balance_sheet_qt": {
+        "score": 4,
+        "confidence": 0.95
+      },
+      "forward_guidance": {
+        "score": 4,
+        "confidence": 0.95
+      }
+    },
+    "confidence_overall": 0.94,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2022-05-04",
+    "doc_type": "minutes",
+    "meeting_date": "2022-05-04",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 4,
+        "confidence": 0.95
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 4,
+        "confidence": 0.92
+      },
+      "forward_guidance": {
+        "score": 4,
+        "confidence": 0.93
+      }
+    },
+    "confidence_overall": 0.9,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2022-06-15",
+    "doc_type": "minutes",
+    "meeting_date": "2022-06-15",
+    "overall_score": 4,
+    "dimensions": {
+      "inflation": {
+        "score": 5,
+        "confidence": 0.97
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.92
+      },
+      "forward_guidance": {
+        "score": 4,
+        "confidence": 0.95
+      }
+    },
+    "confidence_overall": 0.95,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2022-07-27",
+    "doc_type": "minutes",
+    "meeting_date": "2022-07-27",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 4,
+        "confidence": 0.95
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.88,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2022-09-21",
+    "doc_type": "minutes",
+    "meeting_date": "2022-09-21",
+    "overall_score": 4,
+    "dimensions": {
+      "inflation": {
+        "score": 5,
+        "confidence": 0.97
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 4,
+        "confidence": 0.92
+      },
+      "forward_guidance": {
+        "score": 4,
+        "confidence": 0.93
+      }
+    },
+    "confidence_overall": 0.93,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2022-11-02",
+    "doc_type": "minutes",
+    "meeting_date": "2022-11-02",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 4,
+        "confidence": 0.95
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.88
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.86,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2022-12-14",
+    "doc_type": "minutes",
+    "meeting_date": "2022-12-14",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.95
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.9,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2023-02-01",
+    "doc_type": "minutes",
+    "meeting_date": "2023-02-01",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2023-03-22",
+    "doc_type": "minutes",
+    "meeting_date": "2023-03-22",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.93
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.82
+      }
+    },
+    "confidence_overall": 0.86,
+    "needs_human_review": true,
+    "quote_violations": [
+      "forward_guidance"
+    ],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2023-05-03",
+    "doc_type": "minutes",
+    "meeting_date": "2023-05-03",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.95
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.86,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2023-06-14",
+    "doc_type": "minutes",
+    "meeting_date": "2023-06-14",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.95
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.88,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2023-07-26",
+    "doc_type": "minutes",
+    "meeting_date": "2023-07-26",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.92
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.83
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2023-09-20",
+    "doc_type": "minutes",
+    "meeting_date": "2023-09-20",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.86,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2023-11-01",
+    "doc_type": "minutes",
+    "meeting_date": "2023-11-01",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.86,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2023-12-13",
+    "doc_type": "minutes",
+    "meeting_date": "2023-12-13",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2024-01-31",
+    "doc_type": "minutes",
+    "meeting_date": "2024-01-31",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2024-03-20",
+    "doc_type": "minutes",
+    "meeting_date": "2024-03-20",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": -1,
+        "confidence": 0.75
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.8,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2024-05-01",
+    "doc_type": "minutes",
+    "meeting_date": "2024-05-01",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": -1,
+        "confidence": 0.75
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2024-06-12",
+    "doc_type": "minutes",
+    "meeting_date": "2024-06-12",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.75
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2024-07-31",
+    "doc_type": "minutes",
+    "meeting_date": "2024-07-31",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": -2,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.75
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.88,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2024-09-18",
+    "doc_type": "minutes",
+    "meeting_date": "2024-09-18",
+    "overall_score": -3,
+    "dimensions": {
+      "inflation": {
+        "score": -2,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": -3,
+        "confidence": 0.88
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.88,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2024-11-07",
+    "doc_type": "minutes",
+    "meeting_date": "2024-11-07",
+    "overall_score": -1,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": -1,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2024-12-18",
+    "doc_type": "minutes",
+    "meeting_date": "2024-12-18",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.82
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.88
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2025-01-29",
+    "doc_type": "minutes",
+    "meeting_date": "2025-01-29",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": -1,
+        "confidence": 0.7
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.83,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2025-03-19",
+    "doc_type": "minutes",
+    "meeting_date": "2025-03-19",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2025-05-07",
+    "doc_type": "minutes",
+    "meeting_date": "2025-05-07",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2025-06-18",
+    "doc_type": "minutes",
+    "meeting_date": "2025-06-18",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.75
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.78,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2025-07-30",
+    "doc_type": "minutes",
+    "meeting_date": "2025-07-30",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.75
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2025-09-17",
+    "doc_type": "minutes",
+    "meeting_date": "2025-09-17",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": -2,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2025-10-29",
+    "doc_type": "minutes",
+    "meeting_date": "2025-10-29",
+    "overall_score": -1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.88
+      },
+      "balance_sheet_qt": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": -1,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2025-12-10",
+    "doc_type": "minutes",
+    "meeting_date": "2025-12-10",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": -1,
+        "confidence": 0.75
+      },
+      "forward_guidance": {
+        "score": -2,
+        "confidence": 0.82
+      }
+    },
+    "confidence_overall": 0.83,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2026-01-28",
+    "doc_type": "minutes",
+    "meeting_date": "2026-01-28",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": -1,
+        "confidence": 0.6
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.8,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2026-03-18",
+    "doc_type": "minutes",
+    "meeting_date": "2026-03-18",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": -1,
+        "confidence": 0.55
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.7
+      }
+    },
+    "confidence_overall": 0.75,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_minutes_2026-04-29",
+    "doc_type": "minutes",
+    "meeting_date": "2026-04-29",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.5
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2021-01-27",
+    "doc_type": "statement",
+    "meeting_date": "2021-01-27",
+    "overall_score": -4,
+    "dimensions": {
+      "inflation": {
+        "score": -3,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -3,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": -4,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": -4,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.87,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2021-03-17",
+    "doc_type": "statement",
+    "meeting_date": "2021-03-17",
+    "overall_score": -3,
+    "dimensions": {
+      "inflation": {
+        "score": -3,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": -3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.88
+      }
+    },
+    "confidence_overall": 0.86,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2021-04-28",
+    "doc_type": "statement",
+    "meeting_date": "2021-04-28",
+    "overall_score": -3,
+    "dimensions": {
+      "inflation": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": -3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.88
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2021-06-16",
+    "doc_type": "statement",
+    "meeting_date": "2021-06-16",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": -3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2021-07-28",
+    "doc_type": "statement",
+    "meeting_date": "2021-07-28",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.7
+      },
+      "balance_sheet_qt": {
+        "score": -2,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": -2,
+        "confidence": 0.82
+      }
+    },
+    "confidence_overall": 0.8,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2021-09-22",
+    "doc_type": "statement",
+    "meeting_date": "2021-09-22",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.6
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.7
+      }
+    },
+    "confidence_overall": 0.75,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2021-11-03",
+    "doc_type": "statement",
+    "meeting_date": "2021-11-03",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.6
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.7
+      }
+    },
+    "confidence_overall": 0.75,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2021-12-15",
+    "doc_type": "statement",
+    "meeting_date": "2021-12-15",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.92
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.88
+      }
+    },
+    "confidence_overall": 0.89,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2022-01-26",
+    "doc_type": "statement",
+    "meeting_date": "2022-01-26",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.88
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.88,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2022-03-16",
+    "doc_type": "statement",
+    "meeting_date": "2022-03-16",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.88,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2022-05-04",
+    "doc_type": "statement",
+    "meeting_date": "2022-05-04",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.88,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2022-06-15",
+    "doc_type": "statement",
+    "meeting_date": "2022-06-15",
+    "overall_score": 4,
+    "dimensions": {
+      "inflation": {
+        "score": 4,
+        "confidence": 0.95
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": 4,
+        "confidence": 0.92
+      }
+    },
+    "confidence_overall": 0.9,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2022-07-27",
+    "doc_type": "statement",
+    "meeting_date": "2022-07-27",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 4,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 4,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2022-09-21",
+    "doc_type": "statement",
+    "meeting_date": "2022-09-21",
+    "overall_score": 4,
+    "dimensions": {
+      "inflation": {
+        "score": 4,
+        "confidence": 0.95
+      },
+      "labor": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "balance_sheet_qt": {
+        "score": 3,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": 4,
+        "confidence": 0.95
+      }
+    },
+    "confidence_overall": 0.93,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2022-11-02",
+    "doc_type": "statement",
+    "meeting_date": "2022-11-02",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.7
+      }
+    },
+    "confidence_overall": 0.75,
+    "needs_human_review": true,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2022-12-14",
+    "doc_type": "statement",
+    "meeting_date": "2022-12-14",
+    "overall_score": 3,
+    "dimensions": {
+      "inflation": {
+        "score": 3,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2023-02-01",
+    "doc_type": "statement",
+    "meeting_date": "2023-02-01",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 3,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2023-03-22",
+    "doc_type": "statement",
+    "meeting_date": "2023-03-22",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.6
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.78,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2023-05-03",
+    "doc_type": "statement",
+    "meeting_date": "2023-05-03",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.6
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.7
+      }
+    },
+    "confidence_overall": 0.75,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2023-06-14",
+    "doc_type": "statement",
+    "meeting_date": "2023-06-14",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.78,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2023-07-26",
+    "doc_type": "statement",
+    "meeting_date": "2023-07-26",
+    "overall_score": 2,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.6
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.8,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2023-09-20",
+    "doc_type": "statement",
+    "meeting_date": "2023-09-20",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.75
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.8,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2023-11-01",
+    "doc_type": "statement",
+    "meeting_date": "2023-11-01",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.75
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 2,
+        "confidence": 0.82
+      }
+    },
+    "confidence_overall": 0.8,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2023-12-13",
+    "doc_type": "statement",
+    "meeting_date": "2023-12-13",
+    "overall_score": -1,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.7
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.6
+      }
+    },
+    "confidence_overall": 0.75,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2024-01-31",
+    "doc_type": "statement",
+    "meeting_date": "2024-01-31",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2024-03-20",
+    "doc_type": "statement",
+    "meeting_date": "2024-03-20",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.85,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2024-05-01",
+    "doc_type": "statement",
+    "meeting_date": "2024-05-01",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.9
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.8,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2024-06-12",
+    "doc_type": "statement",
+    "meeting_date": "2024-06-12",
+    "overall_score": -1,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.85
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.7
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.78,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2024-07-31",
+    "doc_type": "statement",
+    "meeting_date": "2024-07-31",
+    "overall_score": -1,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": -1,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2024-09-18",
+    "doc_type": "statement",
+    "meeting_date": "2024-09-18",
+    "overall_score": -3,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.7
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.9
+      }
+    },
+    "confidence_overall": 0.86,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2024-11-07",
+    "doc_type": "statement",
+    "meeting_date": "2024-11-07",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.8
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.5
+      },
+      "forward_guidance": {
+        "score": -2,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.78,
+    "needs_human_review": true,
+    "quote_violations": [
+      "balance_sheet_qt"
+    ],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2024-12-18",
+    "doc_type": "statement",
+    "meeting_date": "2024-12-18",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.7
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.6
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.72,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2025-01-29",
+    "doc_type": "statement",
+    "meeting_date": "2025-01-29",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.7
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.8,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2025-03-19",
+    "doc_type": "statement",
+    "meeting_date": "2025-03-19",
+    "overall_score": -1,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.75
+      },
+      "balance_sheet_qt": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.7
+      }
+    },
+    "confidence_overall": 0.75,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2025-05-07",
+    "doc_type": "statement",
+    "meeting_date": "2025-05-07",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.7
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.6
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.72,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2025-06-18",
+    "doc_type": "statement",
+    "meeting_date": "2025-06-18",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2025-07-30",
+    "doc_type": "statement",
+    "meeting_date": "2025-07-30",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.7
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.6
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.7
+      }
+    },
+    "confidence_overall": 0.72,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2025-08-22",
+    "doc_type": "statement",
+    "meeting_date": "2025-08-22",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 0,
+        "confidence": 0.4
+      },
+      "labor": {
+        "score": 0,
+        "confidence": 0.3
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.2
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.3
+      }
+    },
+    "confidence_overall": 0.4,
+    "needs_human_review": true,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2025-09-17",
+    "doc_type": "statement",
+    "meeting_date": "2025-09-17",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "labor": {
+        "score": -3,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": 1,
+        "confidence": 0.6
+      },
+      "forward_guidance": {
+        "score": -3,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2025-10-29",
+    "doc_type": "statement",
+    "meeting_date": "2025-10-29",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": -2,
+        "confidence": 0.9
+      },
+      "forward_guidance": {
+        "score": -2,
+        "confidence": 0.85
+      }
+    },
+    "confidence_overall": 0.82,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2025-12-10",
+    "doc_type": "statement",
+    "meeting_date": "2025-12-10",
+    "overall_score": -2,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": -2,
+        "confidence": 0.85
+      },
+      "balance_sheet_qt": {
+        "score": -2,
+        "confidence": 0.8
+      },
+      "forward_guidance": {
+        "score": -1,
+        "confidence": 0.75
+      }
+    },
+    "confidence_overall": 0.78,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2026-01-28",
+    "doc_type": "statement",
+    "meeting_date": "2026-01-28",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.7
+      },
+      "labor": {
+        "score": 1,
+        "confidence": 0.65
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.4
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.7
+      }
+    },
+    "confidence_overall": 0.68,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2026-03-18",
+    "doc_type": "statement",
+    "meeting_date": "2026-03-18",
+    "overall_score": 0,
+    "dimensions": {
+      "inflation": {
+        "score": 1,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.7
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.4
+      },
+      "forward_guidance": {
+        "score": 0,
+        "confidence": 0.8
+      }
+    },
+    "confidence_overall": 0.78,
+    "needs_human_review": false,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  },
+  {
+    "document_id": "fed_statement_2026-04-29",
+    "doc_type": "statement",
+    "meeting_date": "2026-04-29",
+    "overall_score": 1,
+    "dimensions": {
+      "inflation": {
+        "score": 2,
+        "confidence": 0.8
+      },
+      "labor": {
+        "score": -1,
+        "confidence": 0.6
+      },
+      "balance_sheet_qt": {
+        "score": 0,
+        "confidence": 0.2
+      },
+      "forward_guidance": {
+        "score": 1,
+        "confidence": 0.55
+      }
+    },
+    "confidence_overall": 0.6,
+    "needs_human_review": true,
+    "quote_violations": [],
+    "score_violations": [],
+    "model": "claude-opus-4-8",
+    "prompt_version": "v0.1.0"
+  }
+]

@@ -132,6 +132,33 @@ python -m macropulse.attribution.cli run --dry-run  # 只打印不写
 >
 > 已知坑：别拿 `aws s3 ls` 输出 grep 日期——第一列是上传时间戳，会误匹配成事件日期。
 
+## Eval harness（第四周·CI 回归套件）
+
+三件套，对应交接文档的 eval 设计：
+
+**Tier-1 结构/校准回归**（CI 安全，无 API/S3/网络，每次提交都跑）
+- 跑 committed `eval/golden_scores.json`（87 条生产分数快照）
+- 校验：schema/分数范围不变量 + **锚点校准带**（2022-06-15 ∈[3,5]、2024-09-18 ∈[-5,-2]、
+  2024-01-31 ∈[-1,1]）——prompt 改动若动摇分数标尺，这里失败
+- 见 `tests/macropulse/test_eval_regression.py` + `.github/workflows/macropulse-eval.yml`
+
+**Tier-2 漂移测试**（gated，真实调 Claude API，默认跳过）
+- 重打 3 个校准锚点，与 golden 比对 overall_score 漂移 ≤1 且方向不翻转
+- `MACRO_RUN_LLM_EVAL=1 pytest tests/macropulse/test_eval_drift.py -m llm`
+
+**人工裁决队列**（低置信/needs_review/逐字违规/价格冲突进队列）
+- price_conflict 维度接归因结果：方向打脸（|1d收益|>1%）或中性分却大波动（|1d|>2%）
+- 裁决存 `data/eval/adjudications.json`，回流为校准依据并移出队列
+
+```bash
+python -m macropulse.eval.cli check               # 本地跑 Tier-1（CI 同款）
+python -m macropulse.eval.cli queue [--write]     # 生成裁决队列
+python -m macropulse.eval.cli snapshot            # 重打 prompt 后刷新 golden，review diff 再 commit
+```
+
+> 队列首跑捞出 8 项：含 2026-03-18（中性分却 1d XAU -5.67% 大波动）、2026-01-28/04-29
+> 方向打脸、Jackson Hole 低置信、纪要 key_quote 逐字违规——正是值得人工复核的样本。
+
 ## 合规
 
 Fed 文档为公开出版物（FOIA / 公共领域），抓取风险低。本模块自报 User-Agent、
