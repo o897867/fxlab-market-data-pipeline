@@ -7,156 +7,281 @@ const API = import.meta.env.VITE_API_URL || '';
 
 function useFetch(url) {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
   useEffect(() => {
+    if (!url) return;
     let cancelled = false;
     fetch(`${API}${url}`)
       .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
       .then(d => { if (!cancelled) setData(d); })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [url]);
-  return { data, loading };
+  return data;
 }
 
-const T = {
+/* ── i18n ── */
+const I18N = {
   cn: {
-    title: 'MacroPulse · 央行通讯鹰鸽计量',
-    sub: 'Fed FOMC 声明/纪要的结构化鹰鸽打分、跨期红线对比、与黄金价格反应的归因回测',
-    timeline: '鹰鸽分数时间线', hawk: '鹰', dove: '鸽', neutral: '中性',
-    redline: '最新红线对比', attribution: '归因回测 · 鹰鸽分数 vs XAU 反应',
-    queue: '人工裁决队列', window: '窗口', hit: '方向命中', corr: '相关',
-    score: '分', conf: '置信', noprice: '超出价格覆盖', empty: '暂无数据',
-    hitcol: '命中', misscol: '未命中', neu: '中性', reviewFlag: '待复核',
-    limitation: '局限：仅 XAU 单标的、样本 N 极小（受价格历史限制）、未控混杂因素，结论仅作方法论演示。',
+    eyebrow: 'FOMC 鹰鸽倾向 · 带评估闭环的结构化读数',
+    titlePre: '措辞会变，', titleEm: '市场会验证',
+    lede: '把美联储声明与纪要的鹰鸽倾向做成可溯源、被市场反应检验过的结构化分数。每个读数都有原文出处、会被黄金的真实反应回测，不确定的进入人工复核——我们也如实承认样本仍然太小。',
+    m1: '已分析文档', m2: '声明 · 纪要', m3: '覆盖区间', m4: '待人工复核',
+    mod1: '鹰鸽分数时间线',
+    mod1desc: '每篇文档一个总分（−5 极鸽 … +5 极鹰），中轴对齐。从加息周期的红色簇到降息周期的绿色簇，一眼读出政策重心的迁移。日期取自美联储真实 FOMC 日程。',
+    legHawk: '鹰派 · 紧缩', legDove: '鸽派 · 宽松', legNeu: '中性', legStmt: '声明', legMin: '纪要', legReview: '待复核',
+    tlDoc: '文档', tlFootL: '每次新 FOMC 会议自动追加，时间线持续增长', tlFootR: '分数为整数 −5…+5 · 中轴 = 0',
+    mod2: '最新红线对比',
+    mod2desc: '最近两期声明的逐处措辞改动。删除标红删除线、新增标绿，每处给出鹰／鸽方向与强度——这是把"措辞即信号"做给非技术观众看的核心模块。',
+    diffNote: '红线引用美联储原文，逐字保留、不作翻译——比对的是 Fed 的确切措辞。方向与强度由模型标注。',
+    mod3: '归因回测 · 分数 vs 黄金反应',
+    mod3desc: '用黄金（XAU）在三个窗口的真实价格反应，去检验分数方向是否被市场验证。鹰派应压金价、鸽派应推金价——命中即方向一致。',
+    evtDate: '会议日期', evtScore: '分数', hitRate: '方向命中率', corr: '相关系数',
+    limitLabel: '局限声明 · 不可弱化',
+    limitText: '当前价格覆盖样本极小，方向命中率不构成统计显著；回测只用了黄金一个标的，未控制同时段的其他宏观冲击与流动性差异。这不是"预测准确率"，而是一个仍在积累证据的检验框架——随每次新会议，样本会变大、结论会更新。',
+    mod4: '人工裁决队列',
+    mod4desc: '系统主动标出"不放心"的样本交人工复核——展示它知道自己可能在哪里出错。理由以标签呈现。',
+    foot: '© 2026 临象财经 · 数据与读数仅供研究参考，不构成投资建议',
+    docs: '篇',
+    srcScores: '分数：MacroPulse 模型读数', srcDates: '会议与纪要日期：美联储官方 FOMC 日程（真实）', srcGold: '黄金反应：FXLab 真实 XAU 分钟级行情（样本仍小）',
+    rNeeds: '需复核', rLow: '低置信度', rQuote: '引用越界', rPrice: '价格背离',
+    dHawkish: '偏鹰', dDovish: '偏鸽', dNeutral: '中性',
+    phHawk: '加息周期 · 鹰', phHawkLean: '偏鹰', phNeu: '中性', phDoveLean: '偏鸽', phDove: '降息周期 · 鸽',
   },
   en: {
-    title: 'MacroPulse · Central-Bank Hawk-Dove Metrics',
-    sub: 'Structured hawk-dove scoring of Fed FOMC statements/minutes, cross-meeting red-line diffs, and attribution against gold price reactions',
-    timeline: 'Hawk-Dove Score Timeline', hawk: 'Hawk', dove: 'Dove', neutral: 'Neutral',
-    redline: 'Latest Red-line Diff', attribution: 'Attribution · Hawk-Dove Score vs XAU Reaction',
-    queue: 'Human Adjudication Queue', window: 'Window', hit: 'Direction Hit', corr: 'Corr',
-    score: 'score', conf: 'conf', noprice: 'outside price coverage', empty: 'No data',
-    hitcol: 'hit', misscol: 'miss', neu: 'neutral', reviewFlag: 'needs review',
-    limitation: 'Limitation: gold-only, very small N (bounded by price history), confounders uncontrolled — methodology demo, not statistically significant.',
+    eyebrow: 'FOMC hawk–dove read · structured, with an evaluation loop',
+    titlePre: 'Wording shifts, ', titleEm: 'the market verifies',
+    lede: "A traceable, market-tested read of how hawkish or dovish each Fed statement and minutes really is. Every score cites its source text, is back-tested against gold's actual reaction, and routes to human review when uncertain — and we openly admit the sample is still small.",
+    m1: 'Docs analyzed', m2: 'Statements · Minutes', m3: 'Coverage', m4: 'In human review',
+    mod1: 'Hawk–Dove Score Timeline',
+    mod1desc: 'One overall score per document (−5 most dovish … +5 most hawkish), centre-aligned. From the red tightening cluster to the green easing cluster — read the policy migration in one glance. Dates are the real Fed FOMC calendar.',
+    legHawk: 'Hawkish · tightening', legDove: 'Dovish · easing', legNeu: 'Neutral', legStmt: 'Statement', legMin: 'Minutes', legReview: 'Needs review',
+    tlDoc: 'Doc', tlFootL: 'Appended automatically after each FOMC meeting — the timeline keeps growing', tlFootR: 'Integer score −5…+5 · centre axis = 0',
+    mod2: 'Latest Red-line Diff',
+    mod2desc: 'Every wording change between the two most recent statements. Deletions struck in red, additions in green, each tagged hawkish / dovish with a strength — the module built to make "wording is signal" legible to non-technical viewers.',
+    diffNote: "The red-line quotes the Fed verbatim and is left untranslated — the comparison is against the Fed's exact wording. Direction and strength are model-annotated.",
+    mod3: 'Attribution · Score vs Gold reaction',
+    mod3desc: "Test whether the score's direction is confirmed by gold's (XAU) actual price reaction across three windows. Hawkish should weigh on gold, dovish should lift it — a hit means the direction agreed.",
+    evtDate: 'Meeting', evtScore: 'Score', hitRate: 'directional hit-rate', corr: 'correlation',
+    limitLabel: 'Stated limitations · not to be softened',
+    limitText: 'Price coverage is very small, so the directional hit-rate is not statistically significant. The back-test uses a single instrument (gold) and does not control for other macro shocks or liquidity differences in the same window. This is not a "prediction accuracy" — it is an evidence-gathering test that updates and strengthens as each new meeting is added.',
+    mod4: 'Adjudication Queue',
+    mod4desc: 'The system flags samples it is not confident about and routes them to a human — showing it knows where it might be wrong. Reasons are shown as chips.',
+    foot: '© 2026 LinXiangFinance · Research read-outs only, not investment advice',
+    docs: 'docs',
+    srcScores: 'Scores · MacroPulse model read-out', srcDates: 'Meeting & minutes dates · official Fed FOMC calendar (real)', srcGold: 'Gold reaction · FXLab real XAU minute data (sample still small)',
+    rNeeds: 'needs_review', rLow: 'low_confidence', rQuote: 'quote_violation', rPrice: 'price_conflict',
+    dHawkish: 'hawkish', dDovish: 'dovish', dNeutral: 'neutral',
+    phHawk: 'Hiking · hawk', phHawkLean: 'Hawk-lean', phNeu: 'Neutral', phDoveLean: 'Dove-lean', phDove: 'Easing · dove',
   },
 };
 
-function scoreColor(s) {
-  if (s > 0) return `rgba(220, 80, 60, ${0.35 + 0.13 * Math.min(s, 5)})`;   // 鹰 红
-  if (s < 0) return `rgba(40, 160, 130, ${0.35 + 0.13 * Math.min(-s, 5)})`; // 鸽 绿
-  return 'rgba(140,140,150,0.4)';
+const MAXBAR = 0.46;
+const side = s => (s > 0 ? 'hawk' : s < 0 ? 'dove' : 'neu');
+const dotdate = d => (d || '').replace(/-/g, '·').slice(5);
+const trunc = (s, n = 130) => (s && s.length > n ? s.slice(0, n - 1) + '…' : s || '');
+
+function phaseOf(mean, t) {
+  if (mean >= 2) return { cls: 'hawk', label: t.phHawk };
+  if (mean >= 0.5) return { cls: 'hawk', label: t.phHawkLean };
+  if (mean > -0.5) return { cls: 'neu', label: t.phNeu };
+  if (mean > -2) return { cls: 'dove', label: t.phDoveLean };
+  return { cls: 'dove', label: t.phDove };
 }
 
-function ScoreTimeline({ scores, tr }) {
-  const rows = (scores || []).slice().sort((a, b) => a.meeting_date.localeCompare(b.meeting_date));
-  const max = 5;
+function Scale() {
+  const marks = [{ v: -5, l: '−5' }, { v: 0, l: '0' }, { v: 5, l: '+5' }];
   return (
-    <div className="mp-timeline">
-      {rows.map(r => {
-        const s = r.overall_score;
-        const w = (Math.abs(s) / max) * 50; // 半轴 50%
+    <div className="tl__scale">
+      {marks.map(m => {
+        const pct = 50 + (m.v / 5) * MAXBAR * 100;
         return (
-          <div key={r.document_id} className="mp-tl-row" title={`${r.document_id}  ${tr.conf} ${r.confidence_overall}`}>
-            <span className="mp-tl-date">{r.meeting_date}</span>
-            <span className={`mp-tl-type mp-${r.doc_type}`}>{r.doc_type === 'statement' ? 'S' : 'M'}</span>
-            <div className="mp-tl-track">
-              <div className="mp-tl-mid" />
-              <div className="mp-tl-bar"
-                   style={{
-                     [s >= 0 ? 'left' : 'right']: '50%',
-                     width: `${w}%`,
-                     background: scoreColor(s),
-                   }} />
-            </div>
-            <span className="mp-tl-val" style={{ color: s > 0 ? '#d8503c' : s < 0 ? '#28a082' : '#888' }}>
-              {s > 0 ? '+' : ''}{s}
-            </span>
-            {r.needs_human_review && <span className="mp-flag" title={tr.reviewFlag}>⚑</span>}
-          </div>
+          <React.Fragment key={m.v}>
+            <div className={'tick' + (m.v === 0 ? ' center' : '')} style={{ left: `${pct}%` }} />
+            <div className="ticklabel" style={{ left: `${pct}%` }}>{m.l}</div>
+          </React.Fragment>
         );
       })}
+      <div className="ticklabel" style={{ left: '88%', color: 'var(--hawk)' }}>鹰 →</div>
+      <div className="ticklabel" style={{ left: '12%', color: 'var(--dove)' }}>← 鸽</div>
     </div>
   );
 }
 
-function RedLine({ diff, tr }) {
-  if (!diff) return <div className="mp-muted">{tr.empty}</div>;
-  const dirBadge = (d) => (
-    <span className={`mp-dir mp-dir-${d.direction}`}>
-      {d.direction}{d.magnitude ? ` ·${d.magnitude}` : ''}
-    </span>
-  );
+function Timeline({ scores, t }) {
+  if (!scores) return null;
+  const byYear = {};
+  scores.forEach(d => { (byYear[d.meeting_date.slice(0, 4)] = byYear[d.meeting_date.slice(0, 4)] || []).push(d); });
+  const years = Object.keys(byYear).sort();
   return (
-    <div>
-      <div className="mp-redline-head">
-        {diff.from_date} → {diff.to_date}
-        <span className="mp-muted">  改 {diff.summary.modified} · 增 {diff.summary.added} · 删 {diff.summary.removed} · 未变 {diff.summary.unchanged}</span>
+    <div className="tl">
+      <div className="tl__axis-head"><div className="l">{t.tlDoc}</div><Scale /></div>
+      <div>
+        {years.map(yr => {
+          const rows = byYear[yr];
+          const mean = rows.reduce((a, d) => a + d.overall_score, 0) / rows.length;
+          const ph = phaseOf(mean, t);
+          const phColor = `var(--${ph.cls === 'neu' ? 'neu' : ph.cls})`;
+          const phBg = `var(--${ph.cls === 'neu' ? 'neu' : ph.cls}-dim)`;
+          return (
+            <React.Fragment key={yr}>
+              <div className="tl__year">
+                <span className="y">{yr}</span>
+                <span className="phase" style={{ color: phColor, background: phBg }}>{ph.label}</span>
+                <span className="cnt">{rows.length} {t.docs}</span>
+              </div>
+              {rows.map(d => {
+                const s = d.overall_score;
+                const mag = (Math.abs(s) / 5) * MAXBAR * 100;
+                const type = d.doc_type === 'statement' ? 'S' : 'M';
+                let barStyle, scoreStyle;
+                if (s > 0) { barStyle = { left: '50%', width: `${mag}%` }; scoreStyle = { left: `calc(50% + ${mag}% + 6px)` }; }
+                else if (s < 0) { barStyle = { right: '50%', width: `${mag}%` }; scoreStyle = { right: `calc(50% + ${mag}% + 6px)`, textAlign: 'right' }; }
+                else { barStyle = { left: 'calc(50% - 3px)', width: '6px' }; scoreStyle = { left: 'calc(50% + 10px)' }; }
+                return (
+                  <div className="tl__row" key={d.document_id}>
+                    <div className="tl__meta">
+                      <span className={`tl__type tl__type--${type}`}>{type}</span>
+                      <span className="tl__date">{dotdate(d.meeting_date)}</span>
+                      {d.needs_human_review && <span className="tl__flag" title="needs review">⚑</span>}
+                    </div>
+                    <div className="tl__bar-cell">
+                      <div className="axis" />
+                      <div className={`tl__bar tl__bar--${side(s)}`} style={barStyle} />
+                      <div className="tl__score" style={scoreStyle}>{s > 0 ? '+' : ''}{s}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          );
+        })}
       </div>
-      {(diff.diffs_vs_previous || diff.paragraphs || []).filter(p => p.status && p.status !== 'unchanged').map((p, i) => (
-        <div key={i} className="mp-diff-row">
-          {p.direction && dirBadge(p)}
-          {p.old && <span className="mp-del">{p.old}</span>}
-          {p.new && <span className="mp-ins">{p.new}</span>}
-        </div>
-      ))}
+      <div className="tl__footer"><span>{t.tlFootL}</span><span>{t.tlFootR}</span></div>
     </div>
   );
 }
 
-function Attribution({ attr, tr }) {
-  if (!attr) return <div className="mp-muted">{tr.empty}</div>;
-  const wlabel = { '15': '15min', '60': '1h', '1440': '1d' };
+function RedLine({ detail, fromDate, t, lang }) {
+  if (!detail) return null;
+  const changes = (detail.diffs_vs_previous || []).filter(c => c.old || c.new);
+  const nRep = changes.filter(c => c.old && c.new).length;
+  const nAdd = changes.filter(c => c.new && !c.old).length;
+  const nDel = changes.filter(c => c.old && !c.new).length;
+  const dirLabel = d => (d === 'hawkish' ? t.dHawkish : d === 'dovish' ? t.dDovish : t.dNeutral);
   return (
-    <div>
-      <div className="mp-attr-agg">
+    <div className="diff">
+      <div className="diff__head">
+        <div className="diff__route">
+          <span className="mono">{dotdate(fromDate)}</span><span className="tag">S</span>
+          <span className="arrow">→</span>
+          <span className="mono">{dotdate(detail.meeting_date)}</span><span className="tag">S</span>
+        </div>
+        <div className="diff__counts">
+          <span className="c-rep">{lang === 'cn' ? `改 ${nRep}` : `${nRep} changed`}</span>
+          <span className="c-add">{lang === 'cn' ? `增 ${nAdd}` : `${nAdd} added`}</span>
+          <span className="c-del">{lang === 'cn' ? `删 ${nDel}` : `${nDel} deleted`}</span>
+        </div>
+      </div>
+      <div className="diff__list">
+        {changes.map((c, i) => (
+          <div className="diff__row" key={i}>
+            <div>
+              <div className="diff__text">
+                {c.old && <span className="diff__del">{trunc(c.old)}</span>}{' '}
+                {c.new && <span className="diff__add">{trunc(c.new)}</span>}
+              </div>
+            </div>
+            <div className="diff__badge-wrap">
+              <span className={`diff__badge diff__badge--${c.direction}`}>{dirLabel(c.direction)}</span>
+              <div className="diff__strength" style={{ color: `var(--${c.direction === 'hawkish' ? 'hawk' : c.direction === 'dovish' ? 'dove' : 'neu'})` }}>
+                {[1, 2, 3].map(n => <span key={n} className={`diff__pip${n <= (c.magnitude || 1) ? ' on' : ''}`} />)}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="diff__note">{t.diffNote}</div>
+    </div>
+  );
+}
+
+function Attribution({ attr, t, lang }) {
+  if (!attr) return null;
+  const wlabel = { '15': '15 min', '60': '1 hour', '1440': '1 day' };
+  const mark = (r) => {
+    if (!r) return <td className="m-neu">—</td>;
+    const m = r.hit === null ? <span className="evt__mark m-neu">·</span> : r.hit ? <span className="evt__mark m-hit">✓</span> : <span className="evt__mark m-miss">✗</span>;
+    const up = r.return_pct > 0;
+    return <td><span className="evt__ret"><span className={up ? 'up' : 'down'}>{up ? '+' : ''}{r.return_pct.toFixed(2)}%</span>{m}</span></td>;
+  };
+  return (
+    <>
+      <div className="attr-windows">
         {attr.windows_min.map(w => {
           const a = attr.aggregate[String(w)];
           return (
-            <div key={w} className="mp-attr-card">
-              <div className="mp-attr-w">{wlabel[String(w)] || w}</div>
-              <div className="mp-attr-hit">{tr.hit} {a.hits}/{a.n_directional}
-                {a.hit_rate != null && <b> {Math.round(a.hit_rate * 100)}%</b>}</div>
-              <div className="mp-muted">{tr.corr} {a.pearson_score_vs_return ?? '—'}</div>
+            <div className="win" key={w}>
+              <div className="win__l">{wlabel[String(w)] || w} · {t.hitRate}</div>
+              <div className="win__main">
+                <span className="win__rate">{a.hit_rate != null ? Math.round(a.hit_rate * 100) : '—'}<span style={{ fontSize: '16px' }}>%</span></span>
+                <span className="win__rate-l">@ N={a.n_directional}</span>
+              </div>
+              <div className="win__sub"><span className="k">{t.corr}</span><span className="vv">{a.pearson_score_vs_return ?? '—'}</span></div>
             </div>
           );
         })}
       </div>
-      <table className="mp-attr-tbl">
-        <thead><tr><th></th><th>{tr.score}</th>{attr.windows_min.map(w => <th key={w}>{wlabel[String(w)] || w}</th>)}</tr></thead>
-        <tbody>
-          {attr.events.map(e => (
-            <tr key={e.document_id}>
-              <td>{e.meeting_date}</td>
-              <td style={{ color: e.overall_score > 0 ? '#d8503c' : e.overall_score < 0 ? '#28a082' : '#888' }}>
-                {e.overall_score > 0 ? '+' : ''}{e.overall_score}</td>
-              {attr.windows_min.map(w => {
-                const r = e.reactions[String(w)];
-                if (!r) return <td key={w} className="mp-muted">—</td>;
-                const mark = r.hit === null ? '·' : (r.hit ? '✓' : '✗');
-                const cls = r.hit === null ? '' : (r.hit ? 'mp-hit' : 'mp-miss');
-                return <td key={w} className={cls}>{r.return_pct > 0 ? '+' : ''}{r.return_pct.toFixed(2)}<span className="mp-mark">{mark}</span></td>;
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="mp-limit">⚠️ {tr.limitation}</div>
-    </div>
+      <div className="evt">
+        <table>
+          <thead><tr><th>{t.evtDate}</th><th>{t.evtScore}</th><th>15min · XAU</th><th>1h · XAU</th><th>1d · XAU</th></tr></thead>
+          <tbody>
+            {attr.events.map(e => {
+              const sd = side(e.overall_score);
+              return (
+                <tr key={e.document_id}>
+                  <td>{dotdate(e.meeting_date)}</td>
+                  <td><span className="evt__chip" style={{ color: `var(--${sd})`, background: `var(--${sd}-dim)` }}>{e.overall_score > 0 ? '+' : ''}{e.overall_score}</span></td>
+                  {mark(e.reactions['15'])}{mark(e.reactions['60'])}{mark(e.reactions['1440'])}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="limit">
+        <div className="limit__l"><span>⚑</span><span>{t.limitLabel}</span></div>
+        <p className="limit__t">{t.limitText}</p>
+      </div>
+      <div className="mp-sources">
+        <span className="src real">{t.srcDates}</span>
+        <span className="src model">{t.srcScores}</span>
+        <span className="src illus">{t.srcGold}</span>
+      </div>
+    </>
   );
 }
 
-function Queue({ queue, tr }) {
-  if (!queue || !queue.length) return <div className="mp-muted">{tr.empty}</div>;
+function Queue({ queue, t }) {
+  if (!queue) return null;
+  const chip = (r) => {
+    if (r.startsWith('needs_human_review')) return t.rNeeds;
+    if (r.startsWith('low_confidence')) return t.rLow;
+    if (r.startsWith('quote_violation')) return t.rQuote;
+    if (r.startsWith('price_conflict')) return t.rPrice;
+    return r;
+  };
   return (
-    <div className="mp-queue">
+    <div className="queue">
       {queue.map(q => (
-        <div key={q.document_id} className="mp-q-row">
-          <span className="mp-q-date">{q.meeting_date} <i className={`mp-${q.doc_type}`}>{q.doc_type === 'statement' ? 'S' : 'M'}</i></span>
-          <span className="mp-q-score" style={{ color: q.overall_score > 0 ? '#d8503c' : q.overall_score < 0 ? '#28a082' : '#888' }}>
-            {q.overall_score > 0 ? '+' : ''}{q.overall_score}</span>
-          <span className="mp-q-reasons">{q.reasons.map((rs, i) => <span key={i} className="mp-q-tag">{rs}</span>)}</span>
+        <div className="q-card" key={q.document_id}>
+          <div className="q-card__top">
+            <span className="q-card__date">{dotdate(q.meeting_date)}</span>
+            <span className="q-card__type">{q.doc_type === 'statement' ? 'S' : 'M'}</span>
+            <span className="q-card__score" style={{ color: `var(--${side(q.overall_score)})` }}>{q.overall_score > 0 ? '+' : ''}{q.overall_score}</span>
+          </div>
+          <div className="q-card__reasons">
+            {q.reasons.map((r, i) => <span key={i} className={`q-chip${i > 0 ? ' q-chip--alt' : ''}`} title={r}>{chip(r)}</span>)}
+          </div>
         </div>
       ))}
     </div>
@@ -165,45 +290,82 @@ function Queue({ queue, tr }) {
 
 const MacroPulse = () => {
   const { currentLanguage } = useLanguage();
-  const tr = T[currentLanguage === 'cn' ? 'cn' : 'en'];
-  const { data: scores } = useFetch('/api/macro/scores');
-  const { data: diff } = useFetch('/api/macro/diff');
-  const { data: attr } = useFetch('/api/macro/attribution');
-  const { data: queue } = useFetch('/api/macro/adjudication-queue');
+  const lang = currentLanguage === 'cn' ? 'cn' : 'en';
+  const t = I18N[lang];
+
+  const scoresData = useFetch('/api/macro/scores');
+  const attr = useFetch('/api/macro/attribution');
+  const queueData = useFetch('/api/macro/adjudication-queue');
+
+  const scores = scoresData?.scores;
+  const statements = scores ? scores.filter(s => s.doc_type === 'statement') : [];
+  const latestStmt = statements[statements.length - 1];
+  const prevStmt = statements[statements.length - 2];
+  const detail = useFetch(latestStmt ? `/api/macro/scores/${latestStmt.document_id}` : null);
+
+  // masthead metrics
+  const nStmt = statements.length;
+  const nMin = scores ? scores.filter(s => s.doc_type === 'minutes').length : 0;
+  const inReview = scores ? scores.filter(s => s.needs_human_review).length : 0;
+  const years = scores ? scores.map(s => s.meeting_date.slice(0, 4)) : [];
+  const coverage = years.length ? `${years[0]}–${years[years.length - 1]}` : '—';
 
   return (
-    <div className="mp-page">
+    <>
       <TopNav />
-      <header className="mp-header">
-        <h1>{tr.title}</h1>
-        <p>{tr.sub}</p>
-        <div className="mp-legend">
-          <span><i className="mp-sw" style={{ background: scoreColor(4) }} /> {tr.hawk}</span>
-          <span><i className="mp-sw" style={{ background: scoreColor(-4) }} /> {tr.dove}</span>
-          <span><i className="mp-sw" style={{ background: scoreColor(0) }} /> {tr.neutral}</span>
+      <div className="mp">
+        <div className="mp-wrap">
+          <header className="mp-mast">
+            <p className="mp-mast__eyebrow"><span className="pulse" />{t.eyebrow}</p>
+            <h1 className="mp-mast__title">{t.titlePre}<em>{t.titleEm}</em></h1>
+            <p className="mp-mast__lede">{t.lede}</p>
+            <div className="mp-mast__meta">
+              <div className="mp-mast__metric"><div className="v mono">{scoresData?.count ?? '—'}</div><div className="l">{t.m1}</div></div>
+              <div className="mp-mast__metric"><div className="v mono">{scores ? `${nStmt} · ${nMin}` : '—'}</div><div className="l">{t.m2}</div></div>
+              <div className="mp-mast__metric"><div className="v mono">{coverage}</div><div className="l">{t.m3}</div></div>
+              <div className="mp-mast__metric"><div className="v mono">{scores ? `${inReview} ⚑` : '—'}</div><div className="l">{t.m4}</div></div>
+            </div>
+          </header>
+
+          <section className="mod">
+            <div className="mod__head"><span className="mod__num">01</span><h2 className="mod__title">{t.mod1}</h2><span className="mod__en">Hawk–Dove Score Timeline</span></div>
+            <p className="mod__desc">{t.mod1desc}</p>
+            <div className="legend">
+              <span className="legend__i"><span className="legend__sw" style={{ background: 'var(--hawk)' }} />{t.legHawk}</span>
+              <span className="legend__i"><span className="legend__sw" style={{ background: 'var(--dove)' }} />{t.legDove}</span>
+              <span className="legend__i"><span className="legend__sw" style={{ background: 'var(--neu)' }} />{t.legNeu}</span>
+              <span className="legend__i" style={{ marginLeft: 'auto' }}><span className="tl__type tl__type--S" style={{ position: 'static' }}>S</span>{t.legStmt}</span>
+              <span className="legend__i"><span className="tl__type tl__type--M" style={{ position: 'static' }}>M</span>{t.legMin}</span>
+              <span className="legend__i"><span className="tl__flag">⚑</span>{t.legReview}</span>
+            </div>
+            <Timeline scores={scores} t={t} />
+          </section>
+
+          <section className="mod">
+            <div className="mod__head"><span className="mod__num">02</span><h2 className="mod__title">{t.mod2}</h2><span className="mod__en">Latest Red-line Diff</span></div>
+            <p className="mod__desc">{t.mod2desc}</p>
+            <RedLine detail={detail} fromDate={prevStmt?.meeting_date} t={t} lang={lang} />
+          </section>
+
+          <section className="mod">
+            <div className="mod__head"><span className="mod__num">03</span><h2 className="mod__title">{t.mod3}</h2><span className="mod__en">Attribution · Score vs XAU</span></div>
+            <p className="mod__desc">{t.mod3desc}</p>
+            <Attribution attr={attr} t={t} lang={lang} />
+          </section>
+
+          <section className="mod">
+            <div className="mod__head"><span className="mod__num">04</span><h2 className="mod__title">{t.mod4}</h2><span className="mod__en">Adjudication Queue</span></div>
+            <p className="mod__desc">{t.mod4desc}</p>
+            <Queue queue={queueData?.queue} t={t} />
+          </section>
+
+          <footer className="mp-foot">
+            <span className="mp-foot__c">{t.foot}</span>
+            <span className="mp-foot__c">MacroPulse · LinXiangFinance</span>
+          </footer>
         </div>
-      </header>
-
-      <section className="mp-card">
-        <h2>{tr.timeline} {scores && <span className="mp-muted">({scores.count})</span>}</h2>
-        <ScoreTimeline scores={scores?.scores} tr={tr} />
-      </section>
-
-      <section className="mp-card">
-        <h2>{tr.redline}</h2>
-        <RedLine diff={diff} tr={tr} />
-      </section>
-
-      <section className="mp-card">
-        <h2>{tr.attribution}</h2>
-        <Attribution attr={attr} tr={tr} />
-      </section>
-
-      <section className="mp-card">
-        <h2>{tr.queue} {queue && <span className="mp-muted">({queue.count})</span>}</h2>
-        <Queue queue={queue?.queue} tr={tr} />
-      </section>
-    </div>
+      </div>
+    </>
   );
 };
 
