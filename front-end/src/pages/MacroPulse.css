@@ -1,23 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ════ MacroPulse · LinXiangFinance design system — self-scoped dark page ════
- * 仅作用于 .mp 作用域，不影响应用其余部分。鹰/鸽/中性/复核语义色固定。 */
+/* ════ MacroPulse · LinXiangFinance — 浅色编辑式终端风格（与 Analytics 同一视觉）════
+ * 仅作用于 .mp 作用域，不影响应用其余部分。纸白底、发丝线、鹰红/鸽青/中性灰/复核琥珀。 */
 .mp {
-  --d-bg:        #0c0e13;
-  --d-bg-2:      #11141b;
-  --d-card:      #141821;
-  --d-card-2:    #181d27;
-  --d-line:      #232936;
-  --d-line-soft: #1b2029;
-  --d-text:      #e7eaf0;
-  --d-text-2:    #aab2c0;
-  --d-text-3:    #6b7686;
-  --d-text-4:    #4a5364;
+  --d-bg:        #ffffff;
+  --d-bg-2:      #fafbfc;
+  --d-card:      #ffffff;
+  --d-card-2:    #f8fafc;
+  --d-line:      #e5e5e5;
+  --d-line-soft: #f0f0f0;
+  --d-text:      #1a1a1a;
+  --d-text-2:    #4b5563;
+  --d-text-3:    #999999;
+  --d-text-4:    #b4bac4;
 
-  --hawk:     #f06b62;  --hawk-dim: rgba(240,107,98,0.16);
-  --dove:     #2dd4bf;  --dove-dim: rgba(45,212,191,0.15);
-  --neu:      #8b94a3;  --neu-dim:  rgba(139,148,163,0.16);
-  --review:   #e0a44a;  --review-dim: rgba(224,164,74,0.14);
+  --hawk:     #b91c1c;  --hawk-dim:  #fdecec;
+  --dove:     #0f766e;  --dove-dim:  #ecfdf6;
+  --neu:      #9ca3af;  --neu-dim:   #f3f4f6;
+  --review:   #b45309;  --review-dim:#fff7ed;
 
   --mono:  'DM Mono', 'JetBrains Mono', 'SF Mono', Menlo, monospace;
   --sans:  'DM Sans', 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
@@ -39,7 +39,7 @@
 .mp-mast { padding: 40px 0 26px; border-bottom: 1px solid var(--d-line); }
 .mp-mast__eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--d-text-3); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
 .mp-mast__eyebrow .pulse { width: 6px; height: 6px; border-radius: 999px; background: var(--dove); animation: mp-pulse 2.6s infinite; }
-@keyframes mp-pulse { 0%{box-shadow:0 0 0 0 rgba(45,212,191,0.4);} 70%{box-shadow:0 0 0 7px rgba(45,212,191,0);} 100%{box-shadow:0 0 0 0 rgba(45,212,191,0);} }
+@keyframes mp-pulse { 0%{box-shadow:0 0 0 0 rgba(15,118,110,0.35);} 70%{box-shadow:0 0 0 7px rgba(15,118,110,0);} 100%{box-shadow:0 0 0 0 rgba(15,118,110,0);} }
 .mp-mast__title { font-family: var(--serif); font-size: clamp(30px, 4.4vw, 42px); font-weight: 400; line-height: 1.16; letter-spacing: -0.015em; margin: 0 0 16px; color: var(--d-text); max-width: 760px; }
 .mp-mast__title em { font-style: italic; color: var(--d-text-2); }
 .mp-mast__lede { font-size: 14.5px; line-height: 1.7; color: var(--d-text-2); max-width: 620px; margin: 0 0 22px; }
@@ -78,7 +78,7 @@
 .mp .tl__meta { display: flex; align-items: center; gap: 7px; padding: 0 12px; height: 26px; }
 .mp .tl__date { font-family: var(--mono); font-size: 10.5px; color: var(--d-text-2); }
 .mp .tl__type { font-family: var(--mono); font-size: 8.5px; width: 14px; height: 14px; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.mp .tl__type--S { background: rgba(231,234,240,0.10); color: var(--d-text-2); border: 1px solid var(--d-line); }
+.mp .tl__type--S { background: #f3f4f6; color: var(--d-text-2); border: 1px solid var(--d-line); }
 .mp .tl__type--M { background: transparent; color: var(--d-text-3); border: 1px dashed var(--d-line); }
 .mp .tl__flag { color: var(--review); font-size: 10px; margin-left: -2px; }
 .mp .tl__bar-cell { position: relative; height: 26px; }
