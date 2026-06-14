@@ -27,10 +27,15 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install minimal deps
-        run: pip install pytest anthropic openai beautifulsoup4 requests boto3 python-dotenv
+        run: pip install pytest pydantic anthropic openai beautifulsoup4 requests boto3 python-dotenv
       - name: MacroPulse hermetic suite + Tier-1 eval regression
         env:
           MACRO_RUN_LLM_EVAL: "0"   # Tier-2 漂移测试不在 CI 跑（需 key、有成本）
         run: |
-          python -m pytest tests/macropulse/ -m "not llm" --no-cov -q
+          # 自包含跑法：清掉 app 级 pytest.ini 的 addopts（--cov / --strict-config）、
+          # 用 confcutdir 不加载 tests/conftest.py（它 import httpx/config），
+          # 让 macropulse 套件只依赖上面那几个最小包。
+          python -m pytest tests/macropulse/ -m "not llm" \
+            -o addopts="" -o asyncio_mode=strict \
+            --confcutdir=tests/macropulse -p no:cacheprovider -q
           python -m macropulse.eval.cli check
