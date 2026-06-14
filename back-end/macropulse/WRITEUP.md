@@ -1,5 +1,7 @@
 # MacroPulse — Central-Bank Communication Parsing & Event-Attribution
 
+*中文版：[WRITEUP.zh.md](WRITEUP.zh.md)*
+
 > An LLM-driven pipeline that turns Fed FOMC statements and minutes into structured
 > hawk-dove metrics, tracks wording changes across meetings, scores each release with
 > a calibrated rubric, and backtests those scores against the gold market's actual
