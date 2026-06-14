@@ -46,6 +46,7 @@ const I18N = {
     rNeeds: '需复核', rLow: '低置信度', rQuote: '引用越界', rPrice: '价格背离',
     dHawkish: '偏鹰', dDovish: '偏鸽', dNeutral: '中性',
     phHawk: '加息周期 · 鹰', phHawkLean: '偏鹰', phNeu: '中性', phDoveLean: '偏鸽', phDove: '降息周期 · 鸽',
+    scaleHawk: '鹰 →', scaleDove: '← 鸽',
   },
   en: {
     eyebrow: 'FOMC hawk–dove read · structured, with an evaluation loop',
@@ -72,6 +73,7 @@ const I18N = {
     rNeeds: 'needs_review', rLow: 'low_confidence', rQuote: 'quote_violation', rPrice: 'price_conflict',
     dHawkish: 'hawkish', dDovish: 'dovish', dNeutral: 'neutral',
     phHawk: 'Hiking · hawk', phHawkLean: 'Hawk-lean', phNeu: 'Neutral', phDoveLean: 'Dove-lean', phDove: 'Easing · dove',
+    scaleHawk: 'hawk →', scaleDove: '← dove',
   },
 };
 
@@ -88,7 +90,7 @@ function phaseOf(mean, t) {
   return { cls: 'dove', label: t.phDove };
 }
 
-function Scale() {
+function Scale({ t }) {
   const marks = [{ v: -5, l: '−5' }, { v: 0, l: '0' }, { v: 5, l: '+5' }];
   return (
     <div className="tl__scale">
@@ -101,8 +103,8 @@ function Scale() {
           </React.Fragment>
         );
       })}
-      <div className="ticklabel" style={{ left: '88%', color: 'var(--hawk)' }}>鹰 →</div>
-      <div className="ticklabel" style={{ left: '12%', color: 'var(--dove)' }}>← 鸽</div>
+      <div className="ticklabel" style={{ left: '88%', color: 'var(--hawk)' }}>{t.scaleHawk}</div>
+      <div className="ticklabel" style={{ left: '12%', color: 'var(--dove)' }}>{t.scaleDove}</div>
     </div>
   );
 }
@@ -114,7 +116,7 @@ function Timeline({ scores, t }) {
   const years = Object.keys(byYear).sort();
   return (
     <div className="tl">
-      <div className="tl__axis-head"><div className="l">{t.tlDoc}</div><Scale /></div>
+      <div className="tl__axis-head"><div className="l">{t.tlDoc}</div><Scale t={t} /></div>
       <div>
         {years.map(yr => {
           const rows = byYear[yr];
@@ -290,7 +292,7 @@ function Queue({ queue, t }) {
 
 const MacroPulse = () => {
   const { currentLanguage } = useLanguage();
-  const lang = currentLanguage === 'cn' ? 'cn' : 'en';
+  const lang = currentLanguage === 'zh-CN' ? 'cn' : 'en';
   const t = I18N[lang];
 
   const scoresData = useFetch('/api/macro/scores');
