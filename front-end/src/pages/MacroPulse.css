@@ -1,0 +1,74 @@
+.mp-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 72px 18px 60px;
+  color: var(--text, #e8e8ea);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.mp-header h1 { font-size: 1.5rem; margin: 0 0 6px; }
+.mp-header p { color: #9a9aa5; margin: 0 0 12px; line-height: 1.5; font-size: 0.92rem; }
+.mp-legend { display: flex; gap: 18px; font-size: 0.82rem; color: #b5b5be; }
+.mp-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.mp-sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+
+.mp-card {
+  background: rgba(255,255,255,0.03);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-top: 16px;
+}
+.mp-card h2 { font-size: 1.02rem; margin: 0 0 12px; font-weight: 600; }
+.mp-muted { color: #80808c; font-size: 0.85rem; font-weight: 400; }
+
+/* ── 时间线 ── */
+.mp-timeline { display: flex; flex-direction: column; gap: 3px; }
+.mp-tl-row { display: grid; grid-template-columns: 84px 18px 1fr 32px 16px; align-items: center; gap: 8px; font-size: 0.82rem; }
+.mp-tl-date { color: #9a9aa5; font-variant-numeric: tabular-nums; }
+.mp-tl-type { font-size: 0.66rem; text-align: center; border-radius: 3px; padding: 1px 0; }
+.mp-statement { background: rgba(90,130,200,0.25); color: #9bb8e8; }
+.mp-minutes { background: rgba(160,120,200,0.22); color: #c2a6e0; }
+.mp-tl-track { position: relative; height: 16px; }
+.mp-tl-mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.18); }
+.mp-tl-bar { position: absolute; top: 3px; bottom: 3px; border-radius: 2px; }
+.mp-tl-val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.mp-flag { color: #e0a33c; font-size: 0.8rem; }
+
+/* ── 红线 ── */
+.mp-redline-head { font-weight: 600; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
+.mp-diff-row { padding: 7px 0; border-top: 0.5px solid rgba(255,255,255,0.07); line-height: 1.55; font-size: 0.88rem; }
+.mp-del { color: #d8806c; text-decoration: line-through; text-decoration-color: rgba(216,80,60,0.5); }
+.mp-ins { color: #7fcfb0; }
+.mp-del + .mp-ins { margin-left: 6px; }
+.mp-dir { font-size: 0.66rem; padding: 1px 6px; border-radius: 4px; margin-right: 8px; vertical-align: middle; font-weight: 600; }
+.mp-dir-hawkish { background: rgba(220,80,60,0.2); color: #e89484; }
+.mp-dir-dovish { background: rgba(40,160,130,0.2); color: #7fcfb0; }
+.mp-dir-neutral { background: rgba(140,140,150,0.18); color: #adadb8; }
+
+/* ── 归因 ── */
+.mp-attr-agg { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.mp-attr-card { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px 14px; min-width: 120px; }
+.mp-attr-w { font-weight: 700; font-size: 0.95rem; }
+.mp-attr-hit { font-size: 0.82rem; margin-top: 3px; }
+.mp-attr-hit b { color: #e8e8ea; }
+.mp-attr-tbl { width: 100%; border-collapse: collapse; font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+.mp-attr-tbl th, .mp-attr-tbl td { padding: 5px 8px; text-align: right; border-top: 0.5px solid rgba(255,255,255,0.07); }
+.mp-attr-tbl th:first-child, .mp-attr-tbl td:first-child { text-align: left; color: #9a9aa5; }
+.mp-hit { color: #7fcfb0; }
+.mp-miss { color: #d8806c; }
+.mp-mark { margin-left: 4px; }
+.mp-limit { margin-top: 12px; font-size: 0.78rem; color: #9a8a6a; line-height: 1.5; }
+
+/* ── 队列 ── */
+.mp-queue { display: flex; flex-direction: column; gap: 6px; }
+.mp-q-row { display: grid; grid-template-columns: 110px 30px 1fr; align-items: center; gap: 8px; font-size: 0.82rem; padding: 5px 0; border-top: 0.5px solid rgba(255,255,255,0.07); }
+.mp-q-date { color: #9a9aa5; }
+.mp-q-date i { font-style: normal; font-size: 0.62rem; padding: 1px 4px; border-radius: 3px; margin-left: 4px; }
+.mp-q-score { font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+.mp-q-reasons { display: flex; flex-wrap: wrap; gap: 5px; }
+.mp-q-tag { background: rgba(224,163,60,0.15); color: #d8b06a; padding: 1px 7px; border-radius: 4px; font-size: 0.72rem; }
+
+@media (max-width: 600px) {
+  .mp-tl-row { grid-template-columns: 70px 16px 1fr 28px 14px; font-size: 0.74rem; }
+  .mp-q-row { grid-template-columns: 90px 26px 1fr; }
+}

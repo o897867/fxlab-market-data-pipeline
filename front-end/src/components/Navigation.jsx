@@ -32,6 +32,7 @@ const Navigation = ({ currentPage, setCurrentPage, currentUser, onLogout }) => {
         { id: 'leverage-calculator', label: translate('nav.leverage') },
         { id: 'news', label: translate('nav.news'), badge: 'new' },
         { id: 'analytics', label: currentLanguage === 'cn' ? '数据分析' : 'Analytics', badge: 'new' },
+        { id: 'macro-pulse', label: currentLanguage === 'cn' ? '央行鹰鸽' : 'MacroPulse', badge: 'new' },
         { id: 'weekly-mindmap', label: currentLanguage === 'cn' ? '周报导图' : 'Weekly Mindmap', badge: 'new' },
         ...(currentLanguage === 'cn' ? [
           { id: 'withdrawal-rate', label: '出金汇率', badge: 'new' },

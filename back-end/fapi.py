@@ -220,6 +220,10 @@ app.include_router(
 from routers.analytics_router import router as analytics_router
 app.include_router(analytics_router, tags=["Analytics"])
 
+# ============= MacroPulse 央行通讯解析 =============
+from routers.macro_router import router as macro_router
+app.include_router(macro_router, tags=["MacroPulse"])
+
 # ============= Weekly Mindmap 模块 =============
 from weekly.router import router as weekly_router
 app.include_router(weekly_router)
