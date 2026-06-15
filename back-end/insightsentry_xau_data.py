@@ -293,11 +293,15 @@ class InsightSentryXAUDataFetcher:
     async def aggregate_1m_to_3m(self):
         """聚合1分钟K线到3分钟"""
         with sqlite3.connect(self.db_path) as conn:
+            # 只聚合最近 2 天：历史 3m/5m 已固定，回填后 1m 表达 188 万行，
+            # 每分钟全表扫描会把整表 load 进内存 → OOM。
+            cutoff = int(time.time() * 1000) - 2 * 86400000
             cursor = conn.execute("""
                 SELECT open_time, open, high, low, close, volume
                 FROM xau_candles_1m
+                WHERE open_time > ?
                 ORDER BY open_time ASC
-            """)
+            """, (cutoff,))
 
             rows = cursor.fetchall()
             if not rows:
@@ -331,11 +335,15 @@ class InsightSentryXAUDataFetcher:
     async def aggregate_1m_to_5m(self):
         """聚合1分钟K线到5分钟"""
         with sqlite3.connect(self.db_path) as conn:
+            # 只聚合最近 2 天：历史 3m/5m 已固定，回填后 1m 表达 188 万行，
+            # 每分钟全表扫描会把整表 load 进内存 → OOM。
+            cutoff = int(time.time() * 1000) - 2 * 86400000
             cursor = conn.execute("""
                 SELECT open_time, open, high, low, close, volume
                 FROM xau_candles_1m
+                WHERE open_time > ?
                 ORDER BY open_time ASC
-            """)
+            """, (cutoff,))
 
             rows = cursor.fetchall()
             if not rows:
@@ -574,8 +582,11 @@ class XAUWebSocketClient:
                             break
                         except Exception as e:
                             self._log_error(f"Error processing message: {e}", "process_error")
-                            # 如果是连接相关的错误，跳出循环
-                            if "close frame" in str(e).lower() or "connection" in str(e).lower():
+                            # 连接相关错误（含 1001 going away 驱逐）跳出循环走退避重连，
+                            # 否则死循环烧 CPU/内存 → OOM
+                            es = str(e).lower()
+                            if any(k in es for k in ("close frame", "connection", "going away",
+                                                     "1001", "1006", "1000", "code =")):
                                 logger.warning("⚠️ Connection error detected, breaking loop")
                                 break
 
@@ -893,9 +904,18 @@ class XAUQuoteWebSocketClient:
                         except json.JSONDecodeError as e:
                             self._log_error(f"JSON decode error: {e}", "json_error")
 
+                        except websockets.exceptions.ConnectionClosed:
+                            logger.warning("⚠️ Quote 连接已关闭，退出消息循环重连")
+                            break
                         except Exception as e:
-                            # 使用限流的错误日志
                             self._log_error(f"Error processing message: {e}", "process_error")
+                            # 连接被关闭/驱逐（1001 going away 等）必须退出循环走退避重连，
+                            # 否则同一错误每次迭代重入 → 死循环烧 CPU/内存 → OOM
+                            es = str(e).lower()
+                            if any(k in es for k in ("close frame", "connection", "going away",
+                                                     "1001", "1006", "1000", "code =")):
+                                logger.warning("⚠️ Quote 连接错误，退出循环重连")
+                                break
 
             except websockets.exceptions.ConnectionClosed as e:
                 logger.warning(f"⚠️ Quote WebSocket closed: code={e.code}, reason={e.reason}")
