@@ -150,6 +150,40 @@ def export_news(watermark: dict) -> int:
     return total
 
 
+def export_instrument(watermark: dict, inst: str, table: str) -> int:
+    """通用：把 {inst}_candles_1m 增量导出到 raw/{inst}/candles_1m/。"""
+    wm_key = f"{inst}_last_open_time"
+    last = watermark.get(wm_key, 0)
+    conn = get_db_connection()
+    try:
+        df = pd.read_sql_query(
+            f"SELECT open_time, open, high, low, close, volume FROM {table} "
+            "WHERE open_time > ? ORDER BY open_time", conn, params=(last,))
+    finally:
+        conn.close()
+    if df.empty:
+        logger.info("%s: 无新数据", inst.upper())
+        return 0
+    df["dt"] = pd.to_datetime(df["open_time"], unit="ms", utc=True)
+    df["year"] = df["dt"].dt.year
+    df["month"] = df["dt"].dt.month
+    total = 0
+    for (year, month), group in df.groupby(["year", "month"]):
+        part = group.drop(columns=["dt", "year", "month"])
+        key = f"raw/{inst}/candles_1m/year={year}/month={month:02d}/{inst}_1m_{year}-{month:02d}.parquet"
+        try:
+            obj = s3.get_object(Bucket=S3_BUCKET, Key=key)
+            existing = pd.read_parquet(io.BytesIO(obj["Body"].read()))
+            part = pd.concat([existing, part]).drop_duplicates(subset=["open_time"]).sort_values("open_time")
+        except Exception:
+            pass
+        upload_parquet(part, key)
+        total += len(group)
+    watermark[wm_key] = int(df["open_time"].max())
+    logger.info("%s: 导出 %d 条新记录", inst.upper(), total)
+    return total
+
+
 def main():
     logger.info("=" * 50)
     logger.info("开始数据导出到 S3")
@@ -162,6 +196,10 @@ def main():
 
     if table is None or table == "xau":
         export_xau(watermark)
+    if table is None or table == "dxy":
+        export_instrument(watermark, "dxy", "dxy_candles_1m")
+    if table is None or table == "us2y":
+        export_instrument(watermark, "us2y", "us2y_candles_1m")
     if table is None or table == "news":
         export_news(watermark)
 

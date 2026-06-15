@@ -104,6 +104,10 @@ async def lifespan(app: FastAPI):
                 # Start XAU data polling in background
                 asyncio.create_task(startup_xau_data())
                 logger.info("✅ XAU 数据服务已启动 (InsightSentry)")
+
+                # MacroPulse: DXY/US2Y 前向轮询（REST，独立后台任务，不碰 WS）
+                from macropulse.realtime_poll import start_pollers
+                start_pollers(bearer_token, DATABASE_PATH)
             except Exception as e:
                 logger.error(f"❌ XAU 数据服务初始化失败: {e}")
 

@@ -11,6 +11,7 @@ import boto3
 
 from xau_analysis import run_all as run_xau
 from news_analysis import run_all as run_news
+from instrument_analysis import load_from_s3, analyze
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -46,6 +47,16 @@ def lambda_handler(event, context):
             key = f"{ANALYSIS_PREFIX}/{name}.json"
             upload_json(s3, key, data)
             results[name] = f"s3://{BUCKET}/{key}"
+
+    # DXY / US2Y（通用分析，从各自 raw 前缀读 Parquet）
+    for inst in ("dxy", "us2y"):
+        if analysis in (inst, "all"):
+            logger.info("Running %s analysis...", inst.upper())
+            df = load_from_s3(s3, BUCKET, f"raw/{inst}/candles_1m/")
+            for name, data in analyze(df, inst).items():
+                key = f"{ANALYSIS_PREFIX}/{name}.json"
+                upload_json(s3, key, data)
+                results[name] = f"s3://{BUCKET}/{key}"
 
     if analysis in ("news", "all"):
         logger.info("Running News analysis...")
