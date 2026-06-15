@@ -90,11 +90,17 @@ function Sparkline({ points, up, width = 44, height = 14 }) {
  * XAU Tab
  * ═══════════════════════════════════════════════════════════════════ */
 
-function XauTab({ isChinese, days, setDays }) {
-  const { data: daily, loading: l1 } = useFetch(`/api/analytics/xau/daily-stats?days=${days}`);
-  const { data: vol, loading: l2 } = useFetch(`/api/analytics/xau/volatility?days=${days}`);
-  const { data: sess } = useFetch('/api/analytics/xau/sessions');
-  const { data: weekly } = useFetch('/api/analytics/xau/weekly');
+const INSTS = {
+  xau:  { prefix: 'xau',  ticker: 'XAU',  cn: '黄金现货 · Gold Spot', en: 'Gold Spot · XAUUSD',     ex: 'COMEX', dec: 2, unit: '' },
+  dxy:  { prefix: 'dxy',  ticker: 'DXY',  cn: '美元指数 · Dollar Index', en: 'US Dollar Index',       ex: 'ICE',   dec: 2, unit: '' },
+  us2y: { prefix: 'us2y', ticker: 'US2Y', cn: '2年期美债收益率',         en: 'US 2Y Treasury Yield',  ex: 'TVC',   dec: 3, unit: '%' },
+};
+
+function InstrumentTab({ inst, isChinese, days, setDays }) {
+  const { data: daily, loading: l1 } = useFetch(`/api/analytics/${inst.prefix}/daily-stats?days=${days}`);
+  const { data: vol, loading: l2 } = useFetch(`/api/analytics/${inst.prefix}/volatility?days=${days}`);
+  const { data: sess } = useFetch(`/api/analytics/${inst.prefix}/sessions`);
+  const { data: weekly } = useFetch(`/api/analytics/${inst.prefix}/weekly`);
 
   if (l1 || l2) return <div className="an-loading">{isChinese ? '加载中...' : 'Loading...'}</div>;
 
@@ -126,7 +132,7 @@ function XauTab({ isChinese, days, setDays }) {
   const yLabels = Array.from({ length: 5 }, (_, i) => {
     const val = pMax - (yRange * i / 4);
     const y = scaleY(val, pMin, pMax, yTop, yBot);
-    return { val: val.toFixed(0), y: y + 4 };
+    return { val: val.toFixed(inst.dec === 3 ? 2 : 0), y: y + 4 };
   });
 
   // X axis labels (evenly spaced)
@@ -168,16 +174,16 @@ function XauTab({ isChinese, days, setDays }) {
       {/* ── Asset picker + quote ── */}
       <div className="an-asset-row">
         <div className="an-asset">
-          <div className="an-asset__ticker">XAU</div>
+          <div className="an-asset__ticker">{inst.ticker}</div>
           <div>
-            <div className="an-asset__name">{isChinese ? '黄金现货 · Gold Spot' : 'Gold Spot · XAUUSD'}</div>
-            <div><span className="an-asset__ex">COMEX</span></div>
+            <div className="an-asset__name">{isChinese ? inst.cn : inst.en}</div>
+            <div><span className="an-asset__ex">{inst.ex}</span></div>
           </div>
         </div>
         <div className="an-quote">
-          <div className="an-quote__price">{fmt(latest.close, 2)}</div>
+          <div className="an-quote__price">{fmt(latest.close, inst.dec)}{inst.unit}</div>
           <div className={`an-quote__delta ${pctClass(changePct)}`}>
-            {isUp ? '▲' : '▼'} {pctSign(changeAbs)}{fmt(changeAbs, 2)} &nbsp; {pctSign(changePct)}{fmt(changePct, 2)}% &nbsp;·&nbsp; {isChinese ? '今日' : 'today'}
+            {isUp ? '▲' : '▼'} {pctSign(changeAbs)}{fmt(changeAbs, inst.dec)} &nbsp; {pctSign(changePct)}{fmt(changePct, 2)}% &nbsp;·&nbsp; {isChinese ? '今日' : 'today'}
           </div>
         </div>
       </div>
@@ -612,8 +618,8 @@ export default function Analytics({ onNavigate }) {
           </h1>
           <p className="an-mast__sub">
             {isChinese
-              ? '黄金价格走势、波动率分析、交易时段表现与新闻情绪——用数据读懂市场。'
-              : 'Gold price trends, volatility analysis, session performance, and news sentiment \u2014 reading the market through data.'}
+              ? '黄金、美元指数、2年期美债收益率的走势与波动率、交易时段表现与新闻情绪——用数据读懂市场。'
+              : 'Gold, the dollar index and 2-year Treasury yield \u2014 price trends, volatility, session performance and news sentiment, reading the market through data.'}
           </p>
           <div className="an-mast__bar">
             <span className="an-mast__stamp">{dateStr}</span>
@@ -639,15 +645,21 @@ export default function Analytics({ onNavigate }) {
           <button className={`an-tab${tab === 'xau' ? ' active' : ''}`} onClick={() => setTab('xau')}>
             {isChinese ? '黄金 · XAU' : 'XAU / Gold'}
           </button>
+          <button className={`an-tab${tab === 'dxy' ? ' active' : ''}`} onClick={() => setTab('dxy')}>
+            {isChinese ? '美元 · DXY' : 'DXY / Dollar'}
+          </button>
+          <button className={`an-tab${tab === 'us2y' ? ' active' : ''}`} onClick={() => setTab('us2y')}>
+            {isChinese ? '2年期 · US2Y' : 'US2Y / Yield'}
+          </button>
           <button className={`an-tab${tab === 'news' ? ' active' : ''}`} onClick={() => setTab('news')}>
             {isChinese ? '新闻情绪 · Sentiment' : 'News sentiment'}
           </button>
         </div>
 
         {/* ── Tab content ── */}
-        {tab === 'xau'
-          ? <XauTab isChinese={isChinese} days={days} setDays={setDays} />
-          : <NewsTab isChinese={isChinese} />
+        {tab === 'news'
+          ? <NewsTab isChinese={isChinese} />
+          : <InstrumentTab key={tab} inst={INSTS[tab]} isChinese={isChinese} days={days} setDays={setDays} />
         }
 
         {/* ── Footer ── */}

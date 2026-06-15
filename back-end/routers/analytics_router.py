@@ -81,6 +81,50 @@ async def xau_weekly():
     return _read_s3_json(f"{ANALYSIS_PREFIX}/xau_weekly.json")
 
 
+# ========== DXY（美元指数）端点 ==========
+
+@router.get("/dxy/daily-stats")
+async def dxy_daily_stats(days: Optional[int] = Query(None, le=2000)):
+    return _slice_series(_read_s3_json(f"{ANALYSIS_PREFIX}/dxy_daily_stats.json"), days)
+
+
+@router.get("/dxy/volatility")
+async def dxy_volatility(days: Optional[int] = Query(None, le=2000)):
+    return _slice_series(_read_s3_json(f"{ANALYSIS_PREFIX}/dxy_volatility.json"), days)
+
+
+@router.get("/dxy/sessions")
+async def dxy_sessions():
+    return _read_s3_json(f"{ANALYSIS_PREFIX}/dxy_sessions.json")
+
+
+@router.get("/dxy/weekly")
+async def dxy_weekly():
+    return _read_s3_json(f"{ANALYSIS_PREFIX}/dxy_weekly.json")
+
+
+# ========== US2Y（2年期国债收益率）端点 ==========
+
+@router.get("/us2y/daily-stats")
+async def us2y_daily_stats(days: Optional[int] = Query(None, le=2000)):
+    return _slice_series(_read_s3_json(f"{ANALYSIS_PREFIX}/us2y_daily_stats.json"), days)
+
+
+@router.get("/us2y/volatility")
+async def us2y_volatility(days: Optional[int] = Query(None, le=2000)):
+    return _slice_series(_read_s3_json(f"{ANALYSIS_PREFIX}/us2y_volatility.json"), days)
+
+
+@router.get("/us2y/sessions")
+async def us2y_sessions():
+    return _read_s3_json(f"{ANALYSIS_PREFIX}/us2y_sessions.json")
+
+
+@router.get("/us2y/weekly")
+async def us2y_weekly():
+    return _read_s3_json(f"{ANALYSIS_PREFIX}/us2y_weekly.json")
+
+
 # ========== News 端点 ==========
 
 @router.get("/news/sentiment")
@@ -112,6 +156,8 @@ async def analytics_status():
     s3 = _get_s3()
     files = [
         "xau_daily_stats", "xau_volatility", "xau_sessions", "xau_weekly",
+        "dxy_daily_stats", "dxy_volatility", "dxy_sessions", "dxy_weekly",
+        "us2y_daily_stats", "us2y_volatility", "us2y_sessions", "us2y_weekly",
         "news_sentiment", "news_categories", "news_correlation", "news_symbols",
     ]
     status = {}
