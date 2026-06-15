@@ -29,38 +29,42 @@ _WLABEL = {"15": "15min", "60": "1h", "1440": "1d"}
 
 
 def _report(result: dict) -> None:
-    print("█" * 64)
-    print(f"FOMC 鹰鸽分数 → XAU 价格反应归因  (instrument={result['instrument']})")
+    insts = result["instruments"]
+    print("█" * 70)
+    print(f"FOMC 鹰鸽分数 → 价格反应归因  标的={'/'.join(insts)}")
     print(f"已打分声明 {result['n_scored_statements']} | 有价格覆盖 {result['n_attributed']} "
-          f"| 超出 XAU 历史被跳过 {result['n_skipped_no_price']}")
-    print("█" * 64)
+          f"| 超出历史跳过 {result['n_skipped_no_price']}")
+    print(f"方向约定（鹰派时）：" + "  ".join(
+        f"{i}{'↑' if result['directions'][i] > 0 else '↓'}" for i in insts))
+    print("█" * 70)
 
-    print("\n逐事件（鹰鸽分 vs 各窗口 XAU 收益%，✓=方向命中 ✗=未命中 ·=中性无预期）:")
-    hdr = "  日期        分  " + "".join(f"{_WLABEL.get(str(w), str(w)):>12}" for w in result["windows_min"])
+    print("\n聚合命中率（按 标的×窗口）：")
+    hdr = "  标的     " + "".join(f"{_WLABEL.get(str(w), str(w)):>14}" for w in result["windows_min"])
     print(hdr)
-    for e in result["events"]:
-        line = f"  {e['meeting_date']}  {e['overall_score']:+d}  "
+    for inst in insts + ["consensus"]:
+        cells = ""
         for w in result["windows_min"]:
-            r = e["reactions"].get(str(w))
+            a = result["aggregate"][inst][str(w)]
+            hr = f"{a['hit_rate']:.0%}" if a["hit_rate"] is not None else "n/a"
+            r = a["pearson_score_vs_return"]
+            cells += f"{a['hits']}/{a['n_directional']} {hr:>4} r{r if r is not None else '—'}".rjust(14)
+        label = "一致性" if inst == "consensus" else inst
+        print(f"  {label:<7}{cells}")
+
+    print("\n逐事件 1d 收益%（✓命中 ✗未中 ·中性）：")
+    for e in result["events"]:
+        parts = []
+        for inst in insts:
+            r = e["reactions"][inst].get("1440")
             if r is None:
-                line += f"{'—':>12}"
+                parts.append(f"{inst} —")
             else:
                 mark = "·" if r["hit"] is None else ("✓" if r["hit"] else "✗")
-                line += f"{r['return_pct']:+8.2f}{mark:>2} "[:12].rjust(12)
-        print(line)
+                parts.append(f"{inst} {r['return_pct']:+.2f}{mark}")
+        print(f"  {e['meeting_date']} {e['overall_score']:+d} | " + " | ".join(parts))
 
-    print("\n聚合（按窗口）:")
-    for w in result["windows_min"]:
-        a = result["aggregate"][str(w)]
-        hr = f"{a['hit_rate']:.0%}" if a["hit_rate"] is not None else "n/a"
-        r = a["pearson_score_vs_return"]
-        rstr = f"{r:+.2f}" if r is not None else "n/a"
-        print(f"  {_WLABEL.get(str(w), str(w)):>6}: 方向命中 {a['hits']}/{a['n_directional']} ({hr}) "
-              f"| Pearson(分数,收益)={rstr} "
-              f"| 鹰均收益={a['mean_return_hawkish']} 鸽均收益={a['mean_return_dovish']}")
-
-    print("\n⚠️ 局限：仅 XAU 单标的，样本 N 极小（受 XAU 1m 历史起点限制），"
-          "且未控制同日其他数据发布等混杂因素。结论仅作方法论演示，不构成统计显著性。")
+    print("\n⚠️ 局限：样本仍小、仅三个标的、未控同日其他数据发布等混杂因素；"
+          "consensus 的三标的观测彼此相关，非独立。结论作方法论演示，不构成统计显著性。")
 
 
 def main(argv=None):

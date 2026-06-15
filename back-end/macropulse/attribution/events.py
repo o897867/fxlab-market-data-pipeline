@@ -29,10 +29,15 @@ def release_ts_ms(meeting_date: str) -> int:
     return int(release_utc(meeting_date).timestamp() * 1000)
 
 
-def expected_return_sign(hawk_score: int) -> int:
-    """给定鹰鸽分数，XAU 收益的预期方向：鹰(+)→跌(-1)，鸽(-)→涨(+1)，中性→0。"""
-    if hawk_score > 0:
-        return -1
-    if hawk_score < 0:
-        return 1
-    return 0
+# 各标的对鹰派的预期价格方向（鹰派时该标的应往哪走）：
+#   黄金 XAU：紧缩→实际利率↑→金价跌      → 与分数负相关 (-1)
+#   美元 DXY：紧缩→美元走强→指数涨        → 与分数正相关 (+1)
+#   2年期 US2Y：紧缩→加息预期↑→收益率涨   → 与分数正相关 (+1)
+INSTRUMENT_DIR = {"XAU": -1, "DXY": +1, "US2Y": +1}
+INSTRUMENT_TABLE = {"XAU": "xau_candles_1m", "DXY": "dxy_candles_1m", "US2Y": "us2y_candles_1m"}
+
+
+def expected_return_sign(hawk_score: int, instrument: str = "XAU") -> int:
+    """给定鹰鸽分数与标的，该标的收益的预期方向。中性分→0。"""
+    s = (hawk_score > 0) - (hawk_score < 0)  # sign
+    return s * INSTRUMENT_DIR.get(instrument, -1)

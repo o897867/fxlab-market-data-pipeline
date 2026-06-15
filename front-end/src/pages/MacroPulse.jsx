@@ -33,16 +33,16 @@ const I18N = {
     mod2: '最新红线对比',
     mod2desc: '最近两期声明的逐处措辞改动。删除标红删除线、新增标绿，每处给出鹰／鸽方向与强度——这是把"措辞即信号"做给非技术观众看的核心模块。',
     diffNote: '红线引用美联储原文，逐字保留、不作翻译——比对的是 Fed 的确切措辞。方向与强度由模型标注。',
-    mod3: '归因回测 · 分数 vs 黄金反应',
-    mod3desc: '用黄金（XAU）在三个窗口的真实价格反应，去检验分数方向是否被市场验证。鹰派应压金价、鸽派应推金价——命中即方向一致。',
-    evtDate: '会议日期', evtScore: '分数', hitRate: '方向命中率', corr: '相关系数',
+    mod3: '归因回测 · 分数 vs 市场反应',
+    mod3desc: '用三个标的（黄金 XAU、美元指数 DXY、2 年期国债收益率 US2Y）在三个窗口的真实价格反应，检验分数方向是否被市场验证。一次真正的鹰派意外应同时压金价、推美元、抬收益率——三者一致才是强信号。',
+    evtDate: '会议日期', evtScore: '分数', hitRate: '方向命中率', corr: '相关系数', consensus: '一致性命中率',
     limitLabel: '局限声明 · 不可弱化',
-    limitText: '当前价格覆盖样本极小，方向命中率不构成统计显著；回测只用了黄金一个标的，未控制同时段的其他宏观冲击与流动性差异。这不是"预测准确率"，而是一个仍在积累证据的检验框架——随每次新会议，样本会变大、结论会更新。',
+    limitText: '即时（15min）窗的一致性命中率约 59%、略高于硬币翻转，但样本仍小、未控制同时段其他数据发布与流动性差异；窗口越长、混杂越多。三标的的观测彼此相关、非独立。这不是"预测准确率"，而是一个仍在积累证据的检验框架——随每次新会议更新。',
     mod4: '人工裁决队列',
     mod4desc: '系统主动标出"不放心"的样本交人工复核——展示它知道自己可能在哪里出错。理由以标签呈现。',
     foot: '© 2026 临象财经 · 数据与读数仅供研究参考，不构成投资建议',
     docs: '篇',
-    srcScores: '分数：MacroPulse 模型读数', srcDates: '会议与纪要日期：美联储官方 FOMC 日程（真实）', srcGold: '黄金反应：FXLab 真实 XAU 分钟级行情（样本仍小）',
+    srcScores: '分数：MacroPulse 模型读数', srcDates: '会议与纪要日期：美联储官方 FOMC 日程（真实）', srcGold: '价格反应：FXLab 真实 XAU / 美元指数 / 2年期收益率分钟级行情（2021 至今）',
     rNeeds: '需复核', rLow: '低置信度', rQuote: '引用越界', rPrice: '价格背离',
     dHawkish: '偏鹰', dDovish: '偏鸽', dNeutral: '中性',
     phHawk: '加息周期 · 鹰', phHawkLean: '偏鹰', phNeu: '中性', phDoveLean: '偏鸽', phDove: '降息周期 · 鸽',
@@ -60,16 +60,16 @@ const I18N = {
     mod2: 'Latest Red-line Diff',
     mod2desc: 'Every wording change between the two most recent statements. Deletions struck in red, additions in green, each tagged hawkish / dovish with a strength — the module built to make "wording is signal" legible to non-technical viewers.',
     diffNote: "The red-line quotes the Fed verbatim and is left untranslated — the comparison is against the Fed's exact wording. Direction and strength are model-annotated.",
-    mod3: 'Attribution · Score vs Gold reaction',
-    mod3desc: "Test whether the score's direction is confirmed by gold's (XAU) actual price reaction across three windows. Hawkish should weigh on gold, dovish should lift it — a hit means the direction agreed.",
-    evtDate: 'Meeting', evtScore: 'Score', hitRate: 'directional hit-rate', corr: 'correlation',
+    mod3: 'Attribution · Score vs Market reaction',
+    mod3desc: "Test whether the score's direction is confirmed across three instruments (gold XAU, dollar index DXY, 2-year Treasury yield US2Y) over three windows. A genuine hawkish surprise should weigh on gold, lift the dollar, and push yields up at once — agreement across all three is the strong signal.",
+    evtDate: 'Meeting', evtScore: 'Score', hitRate: 'directional hit-rate', corr: 'correlation', consensus: 'consensus hit-rate',
     limitLabel: 'Stated limitations · not to be softened',
-    limitText: 'Price coverage is very small, so the directional hit-rate is not statistically significant. The back-test uses a single instrument (gold) and does not control for other macro shocks or liquidity differences in the same window. This is not a "prediction accuracy" — it is an evidence-gathering test that updates and strengthens as each new meeting is added.',
+    limitText: 'The immediate (15min) consensus hit-rate is ~59%, slightly above a coin flip — but the sample is still small, other same-window data releases and liquidity differences are uncontrolled, and longer windows accumulate more noise. The three instruments are correlated, not independent. This is not a "prediction accuracy" — it is an evidence-gathering test that updates as each new meeting is added.',
     mod4: 'Adjudication Queue',
     mod4desc: 'The system flags samples it is not confident about and routes them to a human — showing it knows where it might be wrong. Reasons are shown as chips.',
     foot: '© 2026 LinXiangFinance · Research read-outs only, not investment advice',
     docs: 'docs',
-    srcScores: 'Scores · MacroPulse model read-out', srcDates: 'Meeting & minutes dates · official Fed FOMC calendar (real)', srcGold: 'Gold reaction · FXLab real XAU minute data (sample still small)',
+    srcScores: 'Scores · MacroPulse model read-out', srcDates: 'Meeting & minutes dates · official Fed FOMC calendar (real)', srcGold: 'Price reaction · FXLab real XAU / dollar index / 2Y yield minute data (2021–present)',
     rNeeds: 'needs_review', rLow: 'low_confidence', rQuote: 'quote_violation', rPrice: 'price_conflict',
     dHawkish: 'hawkish', dDovish: 'dovish', dNeutral: 'neutral',
     phHawk: 'Hiking · hawk', phHawkLean: 'Hawk-lean', phNeu: 'Neutral', phDoveLean: 'Dove-lean', phDove: 'Easing · dove',
@@ -210,32 +210,41 @@ function RedLine({ detail, fromDate, t, lang }) {
 function Attribution({ attr, t, lang }) {
   if (!attr) return null;
   const wlabel = { '15': '15 min', '60': '1 hour', '1440': '1 day' };
-  const mark = (r) => {
-    if (!r) return <td className="m-neu">—</td>;
+  const insts = attr.instruments || ['XAU', 'DXY', 'US2Y'];
+  // 1d 收益单元格：US2Y 用 bps（低利率期 %变化会误导），其余用 %
+  const cell = (inst, r) => {
+    if (!r) return <td key={inst} className="m-neu">—</td>;
     const m = r.hit === null ? <span className="evt__mark m-neu">·</span> : r.hit ? <span className="evt__mark m-hit">✓</span> : <span className="evt__mark m-miss">✗</span>;
-    const up = r.return_pct > 0;
-    return <td><span className="evt__ret"><span className={up ? 'up' : 'down'}>{up ? '+' : ''}{r.return_pct.toFixed(2)}%</span>{m}</span></td>;
+    let disp, up;
+    if (inst === 'US2Y') { const bp = (r.p1 - r.p0) * 100; up = bp > 0; disp = `${up ? '+' : ''}${bp.toFixed(0)}bp`; }
+    else { up = r.return_pct > 0; disp = `${up ? '+' : ''}${r.return_pct.toFixed(2)}%`; }
+    return <td key={inst}><span className="evt__ret"><span className={up ? 'up' : 'down'}>{disp}</span>{m}</span></td>;
   };
   return (
     <>
       <div className="attr-windows">
         {attr.windows_min.map(w => {
-          const a = attr.aggregate[String(w)];
+          const c = attr.aggregate.consensus[String(w)];
           return (
             <div className="win" key={w}>
-              <div className="win__l">{wlabel[String(w)] || w} · {t.hitRate}</div>
+              <div className="win__l">{wlabel[String(w)] || w} · {t.consensus}</div>
               <div className="win__main">
-                <span className="win__rate">{a.hit_rate != null ? Math.round(a.hit_rate * 100) : '—'}<span style={{ fontSize: '16px' }}>%</span></span>
-                <span className="win__rate-l">@ N={a.n_directional}</span>
+                <span className="win__rate">{c.hit_rate != null ? Math.round(c.hit_rate * 100) : '—'}<span style={{ fontSize: '16px' }}>%</span></span>
+                <span className="win__rate-l">@ N={c.n_directional}</span>
               </div>
-              <div className="win__sub"><span className="k">{t.corr}</span><span className="vv">{a.pearson_score_vs_return ?? '—'}</span></div>
+              <div className="win__insts">
+                {insts.map(inst => {
+                  const a = attr.aggregate[inst][String(w)];
+                  return <div key={inst} className="win__inst"><span>{inst}</span><b>{a.hit_rate != null ? Math.round(a.hit_rate * 100) + '%' : '—'}</b></div>;
+                })}
+              </div>
             </div>
           );
         })}
       </div>
       <div className="evt">
         <table>
-          <thead><tr><th>{t.evtDate}</th><th>{t.evtScore}</th><th>15min · XAU</th><th>1h · XAU</th><th>1d · XAU</th></tr></thead>
+          <thead><tr><th>{t.evtDate}</th><th>{t.evtScore}</th>{insts.map(i => <th key={i}>{i} · 1d</th>)}</tr></thead>
           <tbody>
             {attr.events.map(e => {
               const sd = side(e.overall_score);
@@ -243,7 +252,7 @@ function Attribution({ attr, t, lang }) {
                 <tr key={e.document_id}>
                   <td>{dotdate(e.meeting_date)}</td>
                   <td><span className="evt__chip" style={{ color: `var(--${sd})`, background: `var(--${sd}-dim)` }}>{e.overall_score > 0 ? '+' : ''}{e.overall_score}</span></td>
-                  {mark(e.reactions['15'])}{mark(e.reactions['60'])}{mark(e.reactions['1440'])}
+                  {insts.map(inst => cell(inst, e.reactions[inst] && e.reactions[inst]['1440']))}
                 </tr>
               );
             })}
@@ -257,7 +266,7 @@ function Attribution({ attr, t, lang }) {
       <div className="mp-sources">
         <span className="src real">{t.srcDates}</span>
         <span className="src model">{t.srcScores}</span>
-        <span className="src illus">{t.srcGold}</span>
+        <span className="src real">{t.srcGold}</span>
       </div>
     </>
   );

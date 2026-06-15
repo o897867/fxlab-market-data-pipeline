@@ -23,8 +23,8 @@ class Candle:
     close: float
 
 
-class XauPrices:
-    """轻封装：可注入 sqlite3.Connection（测试用内存库）。"""
+class InstrumentPrices:
+    """轻封装：任意 *_candles_1m 表。可注入 sqlite3.Connection（测试用内存库）。"""
 
     def __init__(self, conn: sqlite3.Connection = None, table: str = "xau_candles_1m"):
         self._own = conn is None
@@ -66,3 +66,7 @@ class XauPrices:
             "return_pct": round((c1.close - c0.close) / c0.close * 100, 4),
             "p1_lag_min": round((t0_ms + window_min * 60_000 - c1.open_time) / 60_000, 1),
         }
+
+
+# 向后兼容旧名
+XauPrices = InstrumentPrices
