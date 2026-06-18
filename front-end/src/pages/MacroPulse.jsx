@@ -57,8 +57,10 @@ const I18N = {
     rateMod: '利率预期重定价 · 意外 → SOFR', rateModEn: 'Rate-Expectations Repricing',
     rateDesc: '不预测联储决议（市场用 SOFR 期货早已定价、赢不了），而是量化一个可做可验的问题：一次意外把市场的隐含政策利率重定价了多少 bp、往哪个方向。目标 = SOFR 期货隐含利率的窗口变动；信号 = FOMC 鹰鸽分 / 宏观 surprise。方向命中无参数、天然样本外；β = 每 1 个标准差信号对应的重定价 bp。',
     rateSignal: '信号源', rateFOMC: 'FOMC 鹰鸽分',
+    rateWin: '主窗口', rateInSample: '样本内命中 [CI95]', rateOOS: '样本外(WF) [CI95]', rateR2: 'OOS R²', ratePooled: '汇总(样本外)',
+    rateSrcCons: '宏观 consensus：investing 历史经济日历（手工回填）',
     rateLimitLabel: '局限声明 · 不可弱化',
-    rateLimitText: '唯一稳定有效的信号是 FOMC 鹰鸽分（15min 方向命中 59%、β 跨窗口一致为正）——但 N=27 尚不统计显著（需约 19/27）。FRED 代理 surprise 命中 ≤50%、多为反号：这是个有价值的负结果，它证明宏观数据要贡献信号必须用真 consensus（实际−预期），前向日历轨正在逐月累积、几月后可重验。SOFR 仅覆盖 2022→今（2021 ZIRP 期对数据无反应）。结论作方法论演示，非统计显著、不构成投资建议。',
+    rateLimitText: '加了 Wilson 95% 置信区间后，真相是：当前样本量下没有一个信号统计显著——所有 CI 下界都 < 50%，与硬币区分不开。FOMC 最有苗头（样本外命中 65%、唯一为正的样本外 R²=+0.05），符合"政策沟通对政策利率预期最直接"。宏观数据(CPI/非农)方向倾向为正但 CI 含 50%；幅度预测的样本外 R² 几乎全负——拿历史 β 预测重定价幅度还不如猜 0。真 consensus 修正了 FRED 代理的反号问题，但通往显著的路是更多数据(前向轨在攒)，不是更花哨的模型。SOFR 仅 2022→今。方法论演示，非统计显著，不构成投资建议。',
   },
   en: {
     eyebrow: 'FOMC hawk–dove read · structured, with an evaluation loop',
@@ -96,8 +98,10 @@ const I18N = {
     rateMod: 'Rate-Expectations Repricing · Surprise → SOFR', rateModEn: 'Rate-Expectations Repricing',
     rateDesc: "Not a forecast of the Fed's decision (the market already prices that via SOFR futures — you can't beat it), but a testable question: how many bp, and in which direction, does a surprise reprice the market-implied policy rate? Target = the windowed change in SOFR-implied rate; signal = FOMC hawk-dove score / macro surprise. Directional hit is parameter-free and inherently out-of-sample; β = bp repriced per 1 SD of signal.",
     rateSignal: 'Signal', rateFOMC: 'FOMC hawk-dove',
+    rateWin: 'Window', rateInSample: 'In-sample hit [CI95]', rateOOS: 'Out-of-sample [CI95]', rateR2: 'OOS R²', ratePooled: 'Pooled (OOS)',
+    rateSrcCons: 'Macro consensus · investing.com historical calendar (hand-backfilled)',
     rateLimitLabel: 'Stated limitations · not to be softened',
-    rateLimitText: 'The only consistently useful signal is the FOMC hawk-dove score (59% directional hit at 15min, β positive across windows) — but N=27 is not yet statistically significant (~19/27 needed). FRED proxy surprises hit ≤50% and often with the wrong sign: a valuable negative result, proving that for macro data to carry signal it needs real consensus (actual − forecast), which the forward calendar track is accumulating month by month. SOFR covers 2022–present only (the 2021 ZIRP period does not react to data). Methodology demonstration, not statistically significant, not investment advice.',
+    rateLimitText: 'With Wilson 95% CIs added, the honest truth: at the current sample size no signal is statistically significant — every CI lower bound sits below 50%, indistinguishable from a coin. FOMC is the most promising (65% out-of-sample hit, the only positive OOS R²=+0.05), consistent with policy communication being the most direct read on rate expectations. Macro data (CPI/NFP) lean positive but their CIs include 50%; out-of-sample R² for magnitude is mostly negative — a fitted β predicts repricing size worse than guessing zero. Real consensus fixed the FRED proxy sign error, but the path to significance is more data (the forward track is accumulating), not a fancier model. SOFR covers 2022–present. Methodology demo, not statistically significant, not investment advice.',
   },
 };
 
@@ -341,33 +345,44 @@ function MacroAttribution({ macro, t }) {
 }
 
 function RateModel({ rm, t }) {
-  if (!rm || !rm.by_window) return null;
-  const wl = { '15': '15 min', '60': '1 hour', '1440': '1 day' };
-  const order = ['FOMC', 'CPI', 'CoreCPI', 'CorePCE', 'NFP'];
+  if (!rm || !rm.by_signal) return null;
+  const wl = { 15: '15 min', 60: '1 hour', 1440: '1 day' };
+  const order = ['FOMC', 'CPI', 'CoreCPI', 'NFP', 'CorePCE'];
   const labels = { FOMC: t.rateFOMC, ...(t.macroTypes || {}) };
-  const base = rm.by_window[String(rm.windows_min[0])].by_event_type;
-  const types = order.filter(et => base[et]);
-  const cell = (et, w) => {
-    const blk = rm.by_window[String(w)].by_event_type[et];
-    const d = blk && blk.directional;
-    if (!d || d.hit_rate == null) return <td key={w} className="m-neu">—</td>;
-    const pct = Math.round(d.hit_rate * 100);
-    const beta = blk.ols ? blk.ols.beta_bp : null;
-    const cls = pct > 55 ? 'up' : pct < 45 ? 'down' : '';
-    return <td key={w}><span className={cls} style={{ fontWeight: 600 }}>{pct}%</span> <span className="macro-n">β{beta > 0 ? '+' : ''}{beta != null ? beta : '—'}</span></td>;
+  const types = order.filter(et => rm.by_signal[et]);
+  const pctci = (hr, ci) => hr == null ? '—'
+    : `${Math.round(hr * 100)}% [${Math.round(ci[0] * 100)},${Math.round(ci[1] * 100)}]`;
+  const row = (et) => {
+    const b = rm.by_signal[et];
+    const ins = b.in_sample_directional, oos = b.oos;
+    const beats = ins.beats_coin;
+    return (
+      <tr key={et} className={beats ? 'rate-hot' : ''}>
+        <td><b>{labels[et] || et}</b></td>
+        <td>{wl[b.primary_window]}</td>
+        <td><span className={ins.beats_coin ? 'up' : ''}>{pctci(ins.hit_rate, ins.ci95)}</span> <span className="macro-n">n{ins.n}</span></td>
+        <td>{oos.n ? <><span className={oos.beats_coin ? 'up' : ''}>{pctci(oos.dir_hit, oos.ci95)}</span> <span className="macro-n">n{oos.n}</span></> : '—'}</td>
+        <td><span className={oos.r2_vs_zero > 0 ? 'up' : 'down'}>{oos.r2_vs_zero != null ? oos.r2_vs_zero : '—'}</span></td>
+      </tr>
+    );
   };
+  const po = rm.pooled_oos;
   return (
     <>
       <div className="evt">
         <table>
-          <thead><tr><th>{t.rateSignal}</th>{rm.windows_min.map(w => <th key={w}>{wl[String(w)] || w}</th>)}</tr></thead>
+          <thead><tr>
+            <th>{t.rateSignal}</th><th>{t.rateWin}</th><th>{t.rateInSample}</th><th>{t.rateOOS}</th><th>{t.rateR2}</th>
+          </tr></thead>
           <tbody>
-            {types.map(et => (
-              <tr key={et} className={et === 'FOMC' ? 'rate-hot' : ''}>
-                <td><b>{labels[et] || et}</b> {et === 'FOMC' && <span className="macro-n">✓ {base[et].directional.n}</span>}</td>
-                {rm.windows_min.map(w => cell(et, w))}
+            {types.map(row)}
+            {po && po.n ? (
+              <tr className="macro-pooled">
+                <td><b>{t.ratePooled}</b></td><td>—</td><td>—</td>
+                <td>{pctci(po.dir_hit, po.ci95)} <span className="macro-n">n{po.n}</span></td>
+                <td><span className={po.r2_vs_zero > 0 ? 'up' : 'down'}>{po.r2_vs_zero}</span></td>
               </tr>
-            ))}
+            ) : null}
           </tbody>
         </table>
       </div>
@@ -378,6 +393,7 @@ function RateModel({ rm, t }) {
       <div className="mp-sources">
         <span className="src model">{t.srcScores}</span>
         <span className="src real">SOFR · CME 3M futures (2022–present)</span>
+        <span className="src real">{t.rateSrcCons}</span>
       </div>
     </>
   );
@@ -418,7 +434,7 @@ const MacroPulse = () => {
   const scoresData = useFetch('/api/macro/scores');
   const attr = useFetch('/api/macro/attribution');
   const macroAttr = useFetch('/api/macro/macro-attribution');
-  const rateModel = useFetch('/api/macro/rate-model');
+  const rateModel = useFetch('/api/macro/rate-model-deep');
   const queueData = useFetch('/api/macro/adjudication-queue');
 
   const scores = scoresData?.scores;

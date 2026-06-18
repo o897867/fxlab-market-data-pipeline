@@ -58,11 +58,42 @@ def _report(s: dict):
     print(f"\n⚠️  {s['note']}")
 
 
+def _report_deep(d: dict):
+    print("█" * 68)
+    print("模型 C 深化 · 主窗口方向命中(+Wilson CI) + walk-forward 样本外")
+    print("█" * 68)
+    wl = {15: "15min", 60: "1h", 1440: "1d"}
+    for et, b in d["by_signal"].items():
+        ins = b["in_sample_directional"]
+        oos = b["oos"]
+        ci = ins.get("ci95", (None, None))
+        star = " ★真>50%" if ins.get("beats_coin") else ""
+        print(f"\n── {et}  主窗口 {wl[b['primary_window']]} ──")
+        print(f"  样本内方向命中 {ins['hits']}/{ins['n']} = "
+              f"{ins['hit_rate']:.0%}  CI95[{ci[0]:.0%},{ci[1]:.0%}]{star}"
+              if ins["hit_rate"] is not None else "  样本内: n/a")
+        if oos["n"]:
+            oci = oos["ci95"]
+            print(f"  样本外(WF)     命中 {oos['dir_hit']:.0%} (N={oos['n']}) "
+                  f"CI95[{oci[0]:.0%},{oci[1]:.0%}]  R²_vs随机游走={oos['r2_vs_zero']}")
+        else:
+            print("  样本外: 数据不足")
+    po = d["pooled_oos"]
+    if po["n"]:
+        pci = po["ci95"]
+        print(f"\n══ POOLED 样本外（全信号汇总）══")
+        print(f"  方向命中 {po['dir_hit']:.0%} (N={po['n']}) CI95[{pci[0]:.0%},{pci[1]:.0%}]"
+              f"  R²_vs随机游走={po['r2_vs_zero']}")
+    print(f"\n⚠️  {d['note']}")
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="macropulse.attribution.rate_cli")
     sub = p.add_subparsers(dest="cmd", required=True)
     pr = sub.add_parser("run")
     pr.add_argument("--json", action="store_true")
+    pd_ = sub.add_parser("deep")
+    pd_.add_argument("--json", action="store_true")
     args = p.parse_args(argv)
 
     store = S3RawStore()
@@ -72,6 +103,12 @@ def main(argv=None):
         rows = rate_model.build_dataset(conn, fomc, WINDOWS)
     finally:
         conn.close()
+    if args.cmd == "deep":
+        result = rate_model.deepen(rows)
+        print(json.dumps(result, ensure_ascii=False, indent=2) if args.json else "", end="")
+        if not args.json:
+            _report_deep(result)
+        return
     result = rate_model.summarize(rows, WINDOWS)
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -41,6 +41,46 @@ def test_zscore_by_source_separates():
     assert abs(z[id(rows[2])] - 1.0) < 1e-9  # 不同尺度但标准化后同为 +1
 
 
+def test_wilson_ci_brackets_half():
+    lo, hi = rate_model.wilson_ci(50, 100)
+    assert lo < 0.5 < hi and 0 < lo and hi < 1
+
+
+def test_wilson_ci_lower_above_half_when_strong():
+    lo, hi = rate_model.wilson_ci(90, 100)
+    assert lo > 0.5  # 90/100 显著高于硬币
+
+
+def test_ols_origin_through_zero():
+    assert rate_model._ols_origin([1.0, 2.0, 3.0], [2.0, 4.0, 6.0]) == 2.0
+    assert rate_model._ols_origin([0.0], [5.0]) == 0.0  # sxx=0 → 0
+
+
+def test_oos_metrics_perfect_direction():
+    m = rate_model._oos_metrics([(1.0, 2.0), (-1.0, -3.0), (2.0, 1.0)])
+    assert m["n"] == 3 and m["dir_hit"] == 1.0 and m["beats_coin"] is False  # N小CI宽
+
+
+def test_walk_forward_basic():
+    rows = [{"date": f"2024-{m:02d}-01", "event_type": "CPI", "source": "consensus",
+             "signal": float(s), "drate": {15: float(s) * 2}}
+            for m, s in enumerate([1, -1, 2, -2, 1, -1, 2, -2, 1, -1, 2, -2, 3, -3], 1)]
+    preds = rate_model.walk_forward(rows, "CPI", 15, min_train=12)
+    assert len(preds) == 2  # 14 事件 − 12 训练
+    # y=2x，β应≈2，预测方向与实际一致
+    assert all(rate_model._sgn(p) == rate_model._sgn(a) for p, a in preds)
+
+
+def test_deepen_shape():
+    rows = [{"date": f"2024-{m:02d}-01", "event_type": "CPI", "source": "consensus",
+             "signal": float((-1) ** m), "drate": {15: None, 60: None, 1440: float((-1) ** m)}}
+            for m in range(1, 16)]
+    d = rate_model.deepen(rows, min_train=10)
+    assert "CPI" in d["by_signal"]
+    assert d["by_signal"]["CPI"]["primary_window"] == 1440
+    assert d["pooled_oos"]["n"] >= 1
+
+
 def test_summarize_shape():
     rows = [
         {"date": "2024-01-01", "event_type": "FOMC", "source": "score",

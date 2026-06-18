@@ -87,13 +87,95 @@ def _ols(xs: list[float], ys: list[float]) -> dict | None:
     return {"beta_bp": round(beta, 2), "r2": round(1 - sse / sst, 3) if sst > 0 else None, "n": n}
 
 
+def wilson_ci(hits: int, n: int, z: float = 1.96) -> tuple:
+    """方向命中率的 Wilson 95% 区间。小 N 下判断'是否真高于 50%'的诚实工具。"""
+    if n == 0:
+        return (None, None)
+    p = hits / n
+    d = 1 + z * z / n
+    c = p + z * z / (2 * n)
+    m = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5)
+    return (round((c - m) / d, 3), round((c + m) / d, 3))
+
+
 def _directional(pairs: list[tuple]) -> dict:
-    """pairs: [(signal, drate)]，剔除 None/中性。方向命中 = sign 一致。"""
+    """pairs: [(signal, drate)]，剔除 None/中性。方向命中 = sign 一致 + Wilson CI。"""
     d = [(s, y) for s, y in pairs if y is not None and s != 0 and y != 0]
     if not d:
-        return {"n": 0, "hits": 0, "hit_rate": None}
+        return {"n": 0, "hits": 0, "hit_rate": None, "ci95": (None, None)}
     hits = sum(1 for s, y in d if _sgn(s) == _sgn(y))
-    return {"n": len(d), "hits": hits, "hit_rate": round(hits / len(d), 3)}
+    lo, hi = wilson_ci(hits, len(d))
+    return {"n": len(d), "hits": hits, "hit_rate": round(hits / len(d), 3),
+            "ci95": (lo, hi), "beats_coin": lo is not None and lo > 0.5}
+
+
+def _ols_origin(xs: list[float], ys: list[float]) -> float:
+    """过原点 OLS（surprise=0 → 重定价=0，中性点必须是 0）。返回 β。"""
+    sxx = sum(x * x for x in xs)
+    return sum(x * y for x, y in zip(xs, ys)) / sxx if sxx > 0 else 0.0
+
+
+def walk_forward(rows: list[dict], event_type: str, window: int,
+                 min_train: int = 12) -> list[tuple]:
+    """扩张窗样本外：用过去事件拟合 β，预测下一个。返回 [(pred_bp, actual_bp)]。
+
+    过原点拟合 → 用原始 surprise（同类型单位一致），OOS 预测以 bp 计、跨类型可汇。
+    """
+    seq = sorted((r["date"], r["signal"], r["drate"][window]) for r in rows
+                 if r["event_type"] == event_type and r["drate"].get(window) is not None)
+    preds = []
+    for i in range(min_train, len(seq)):
+        xs = [s for _, s, _ in seq[:i]]
+        ys = [y for _, _, y in seq[:i]]
+        b = _ols_origin(xs, ys)
+        _, xi, yi = seq[i]
+        preds.append((round(b * xi, 3), yi))
+    return preds
+
+
+def _oos_metrics(preds: list[tuple]) -> dict:
+    """样本外 (pred,actual) → 方向命中(+CI) + R²_vs_零基线。"""
+    p = [(pr, ac) for pr, ac in preds if ac != 0 and pr != 0]
+    if not p:
+        return {"n": 0, "dir_hit": None, "r2_vs_zero": None}
+    hits = sum(1 for pr, ac in p if _sgn(pr) == _sgn(ac))
+    sse = sum((ac - pr) ** 2 for pr, ac in p)
+    sst = sum(ac * ac for _, ac in p)  # 基线=随机游走(预测0)
+    lo, hi = wilson_ci(hits, len(p))
+    return {"n": len(p), "dir_hit": round(hits / len(p), 3), "ci95": (lo, hi),
+            "r2_vs_zero": round(1 - sse / sst, 3) if sst > 0 else None,
+            "beats_coin": lo is not None and lo > 0.5}
+
+
+# 主窗口按经济逻辑预设（非数据挖掘）：政策/劳动力即时反应，通胀数据隔夜消化。
+PRIMARY_WINDOW = {"FOMC": 15, "NFP": 15, "CPI": 1440, "CoreCPI": 1440, "CorePCE": 1440}
+
+
+def deepen(rows: list[dict], min_train: int = 12) -> dict:
+    """深化：每信号在'预设主窗口'上的方向命中(+Wilson CI) + walk-forward 样本外。
+
+    主窗口理论先验固定，避免挑窗 p-hacking。样本外把全类型 OOS 预测汇成
+    一个 pooled R²/命中，回答'拿过去拟合的 β，对未来到底有没有用'。
+    """
+    types = [t for t in PRIMARY_WINDOW if any(r["event_type"] == t for r in rows)]
+    per = {}
+    pooled_oos = []
+    for et in types:
+        w = PRIMARY_WINDOW[et]
+        insample = _directional([(r["signal"], r["drate"][w]) for r in rows
+                                 if r["event_type"] == et and r["drate"].get(w) is not None])
+        wf = walk_forward(rows, et, w, min_train)
+        pooled_oos += wf
+        per[et] = {"primary_window": w, "in_sample_directional": insample,
+                   "oos": _oos_metrics(wf)}
+    return {
+        "primary_windows": PRIMARY_WINDOW,
+        "by_signal": per,
+        "pooled_oos": _oos_metrics(pooled_oos),
+        "note": ("主窗口为理论先验固定（FOMC/非农即时、通胀隔夜），非挑窗。"
+                 "方向命中带 Wilson 95% CI——CI 下界>0.5 才算真高于硬币。"
+                 "OOS=扩张窗过原点拟合的样本外预测，R²基线=随机游走(预测0)。"),
+    }
 
 
 def summarize(rows: list[dict], windows: list[int]) -> dict:

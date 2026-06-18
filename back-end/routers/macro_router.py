@@ -218,6 +218,42 @@ async def rate_model_endpoint():
     return data
 
 
+_DEEP_CACHE: dict = {"ts": 0.0, "data": None}
+
+
+@router.get("/rate-model-deep")
+async def rate_model_deep():
+    """模型 C 深化：主窗口方向命中 + Wilson CI + walk-forward 样本外。
+
+    诚实呈现：当前 N 下无信号统计显著（CI 含 50%），FOMC 最有苗头（唯一正 OOS R²）。
+    """
+    import asyncio
+    import sqlite3
+    now = time.time()
+    if _DEEP_CACHE["data"] is not None and (now - _DEEP_CACHE["ts"]) < _MACRO_TTL:
+        return _DEEP_CACHE["data"]
+    from macropulse.attribution import rate_model
+    from macropulse import config as _cfg
+
+    def _compute():
+        fomc = [{"date": r["meeting_date"], "overall_score": r["overall_score"]}
+                for r in _all_scores() if r["doc_type"] == "statement"]
+        conn = sqlite3.connect(_cfg.PRICE_DB_PATH)
+        try:
+            rows = rate_model.build_dataset(conn, fomc, [15, 60, 1440])
+        finally:
+            conn.close()
+        return rate_model.deepen(rows)
+
+    try:
+        data = await asyncio.to_thread(_compute)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("rate-model-deep 计算失败")
+        raise HTTPException(status_code=500, detail=f"rate model deep failed: {e}")
+    _DEEP_CACHE.update(ts=now, data=data)
+    return data
+
+
 @router.get("/adjudication-queue")
 async def adjudication_queue():
     """人工裁决队列（低置信/needs_review/逐字违规/价格冲突）。"""
