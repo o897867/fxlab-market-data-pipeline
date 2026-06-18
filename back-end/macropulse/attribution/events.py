@@ -15,13 +15,20 @@ from zoneinfo import ZoneInfo
 
 _ET = ZoneInfo("America/New_York")
 FOMC_RELEASE_LOCAL_HOUR = 14  # 2:00 p.m. ET
+# 宏观数据（CPI/PCE/非农）统一 8:30 a.m. ET 释放。
+MACRO_RELEASE_LOCAL = (8, 30)
+
+
+def local_utc(date: str, hour: int = FOMC_RELEASE_LOCAL_HOUR, minute: int = 0) -> datetime:
+    """某日（YYYY-MM-DD）+ ET 时分 → UTC tz-aware（zoneinfo 自动处理夏令时）。"""
+    y, m, d = (int(x) for x in date.split("-"))
+    local = datetime(y, m, d, hour, minute, tzinfo=_ET)
+    return local.astimezone(timezone.utc)
 
 
 def release_utc(meeting_date: str) -> datetime:
     """会议日（YYYY-MM-DD）→ 声明释放时刻（UTC，tz-aware）。"""
-    y, m, d = (int(x) for x in meeting_date.split("-"))
-    local = datetime(y, m, d, FOMC_RELEASE_LOCAL_HOUR, 0, tzinfo=_ET)
-    return local.astimezone(timezone.utc)
+    return local_utc(meeting_date, FOMC_RELEASE_LOCAL_HOUR, 0)
 
 
 def release_ts_ms(meeting_date: str) -> int:
@@ -33,8 +40,11 @@ def release_ts_ms(meeting_date: str) -> int:
 #   黄金 XAU：紧缩→实际利率↑→金价跌      → 与分数负相关 (-1)
 #   美元 DXY：紧缩→美元走强→指数涨        → 与分数正相关 (+1)
 #   2年期 US2Y：紧缩→加息预期↑→收益率涨   → 与分数正相关 (+1)
-INSTRUMENT_DIR = {"XAU": -1, "DXY": +1, "US2Y": +1}
-INSTRUMENT_TABLE = {"XAU": "xau_candles_1m", "DXY": "dxy_candles_1m", "US2Y": "us2y_candles_1m"}
+# SOFR 期货：鹰派→预期政策利率↑→期货价(100−rate)↓，故对"鹰派分数"方向为 -1（同黄金）。
+# 存的是原始期货价；隐含利率 = 100 − price 在展示层算。SOFR 仅 2022→今有信号（2021 ZIRP）。
+INSTRUMENT_DIR = {"XAU": -1, "DXY": +1, "US2Y": +1, "SOFR": -1}
+INSTRUMENT_TABLE = {"XAU": "xau_candles_1m", "DXY": "dxy_candles_1m",
+                    "US2Y": "us2y_candles_1m", "SOFR": "sofr_candles_1m"}
 
 
 def expected_return_sign(hawk_score: int, instrument: str = "XAU") -> int:

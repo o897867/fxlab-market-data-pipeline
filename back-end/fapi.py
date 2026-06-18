@@ -108,6 +108,10 @@ async def lifespan(app: FastAPI):
                 # MacroPulse: DXY/US2Y 前向轮询（REST，独立后台任务，不碰 WS）
                 from macropulse.realtime_poll import start_pollers
                 start_pollers(bearer_token, DATABASE_PATH)
+
+                # MacroPulse: 宏观数据日历前向轮询（CPI/PCE/非农 consensus，每日）
+                from macropulse.attribution.calendar_source import start_macro_poller
+                start_macro_poller(bearer_token, DATABASE_PATH)
             except Exception as e:
                 logger.error(f"❌ XAU 数据服务初始化失败: {e}")
 

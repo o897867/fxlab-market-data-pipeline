@@ -144,6 +144,10 @@
 .mp .evt__mark { font-size: 11px; width: 12px; display: inline-block; text-align: center; }
 .mp .m-hit { color: var(--dove); } .mp .m-miss { color: var(--hawk); } .mp .m-neu { color: var(--d-text-4); }
 .mp .up { color: var(--dove); } .mp .down { color: var(--hawk); }
+.mp .macro-n { font-size: 9px; color: var(--d-text-4); }
+.mp .evt tr.macro-pooled td { border-top: 1px solid var(--d-line); border-bottom: none; background: var(--d-card-2); font-weight: 600; }
+.mp .evt tr.rate-hot td { background: var(--dove-dim); }
+.mp .evt tr.rate-hot td:first-child { box-shadow: inset 2px 0 0 var(--dove); }
 .mp .limit { margin-top: 14px; border-left: 2px solid var(--review); background: var(--review-dim); border-radius: 0 8px 8px 0; padding: 13px 16px; }
 .mp .limit__l { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--review); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .mp .limit__t { font-size: 12px; line-height: 1.6; color: var(--d-text-2); margin: 0; }

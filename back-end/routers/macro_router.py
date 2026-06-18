@@ -156,6 +156,68 @@ async def attribution():
     return _read_json(ATTRIBUTION_KEY)
 
 
+_MACRO_CACHE: dict = {"ts": 0.0, "data": None}
+_MACRO_TTL = 600  # 10 分钟；run_macro 读本地 SQLite，前向轮询每日才更新
+
+
+@router.get("/macro-attribution")
+async def macro_attribution():
+    """宏观数据事件（CPI/核心CPI/核心PCE/非农）归因——三标的×窗口命中率。
+
+    surprise 双源：历史 FRED 代理 + 前向真 consensus（见返回 surprise_note）。
+    live 计算（读本地价格库），10 分钟内存缓存。
+    """
+    import asyncio
+    now = time.time()
+    if _MACRO_CACHE["data"] is not None and (now - _MACRO_CACHE["ts"]) < _MACRO_TTL:
+        return _MACRO_CACHE["data"]
+    from macropulse.attribution.backtest import run_macro
+    try:
+        data = await asyncio.to_thread(run_macro)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("macro-attribution 计算失败")
+        raise HTTPException(status_code=500, detail=f"macro attribution failed: {e}")
+    _MACRO_CACHE.update(ts=now, data=data)
+    return data
+
+
+_RATE_CACHE: dict = {"ts": 0.0, "data": None}
+
+
+@router.get("/rate-model")
+async def rate_model_endpoint():
+    """模型 C：意外（FOMC 鹰鸽分 / 宏观 surprise）→ SOFR 利率预期重定价。
+
+    方向命中率 + 敏感度 β。诚实呈现：FOMC 分有信号、FRED 代理 surprise 无。
+    live 计算（读 S3 分数 + 本地 SOFR 价），10 分钟缓存。
+    """
+    import asyncio
+    import sqlite3
+    now = time.time()
+    if _RATE_CACHE["data"] is not None and (now - _RATE_CACHE["ts"]) < _MACRO_TTL:
+        return _RATE_CACHE["data"]
+    from macropulse.attribution import rate_model
+    from macropulse import config as _cfg
+
+    def _compute():
+        fomc = [{"date": r["meeting_date"], "overall_score": r["overall_score"]}
+                for r in _all_scores() if r["doc_type"] == "statement"]
+        conn = sqlite3.connect(_cfg.PRICE_DB_PATH)
+        try:
+            rows = rate_model.build_dataset(conn, fomc, [15, 60, 1440])
+        finally:
+            conn.close()
+        return rate_model.summarize(rows, [15, 60, 1440])
+
+    try:
+        data = await asyncio.to_thread(_compute)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("rate-model 计算失败")
+        raise HTTPException(status_code=500, detail=f"rate model failed: {e}")
+    _RATE_CACHE.update(ts=now, data=data)
+    return data
+
+
 @router.get("/adjudication-queue")
 async def adjudication_queue():
     """人工裁决队列（低置信/needs_review/逐字违规/价格冲突）。"""

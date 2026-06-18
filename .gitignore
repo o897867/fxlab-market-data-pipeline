@@ -119,3 +119,6 @@ ehthumbs.db
 # 运行时文件
 *.sock
 *.socket
+
+# SOFR 历史下载（144M，可由 load_sofr 重生）
+back-end/data/sofr_history/

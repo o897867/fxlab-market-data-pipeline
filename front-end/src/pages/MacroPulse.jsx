@@ -47,6 +47,18 @@ const I18N = {
     dHawkish: '偏鹰', dDovish: '偏鸽', dNeutral: '中性',
     phHawk: '加息周期 · 鹰', phHawkLean: '偏鹰', phNeu: '中性', phDoveLean: '偏鸽', phDove: '降息周期 · 鸽',
     scaleHawk: '鹰 →', scaleDove: '← 鸽',
+    macroMod: '宏观数据归因 · 意外 vs 市场反应', macroModEn: 'Macro Surprise vs Market',
+    macroDesc: '把硬数据（CPI、核心 CPI、核心 PCE、非农就业）的"意外"放进同一套三标的检验：一个 hot 数据＝鹰派，应同步压金价、推美元、抬 2 年收益率。意外的来源诚实分两段——历史段用 FRED 实际值相对近 12 期均值的偏离作代理（无市场预期），前向段用经济日历里的真实 consensus（实际值 − 预期值）。',
+    macroEvt: '数据', macroPooled: '合并 · 全部',
+    macroTypes: { CPI: 'CPI 通胀', CoreCPI: '核心 CPI', CorePCE: '核心 PCE', NFP: '非农就业' },
+    macroLimitLabel: '局限声明 · 不可弱化',
+    macroLimitText: '合并命中率仅在硬币翻转附近（15min≈46%、1日≈54%）——这正说明历史段的"代理意外"是弱信号：FRED 没有市场预期，用环比偏离顶替真 consensus，方向噪声大。前向段（真 consensus）理论更强，但 N 仍接近 0、要靠时间积累。三标的彼此相关、非独立，且同一时段常有多项数据同时发布，混杂未控制。这是个仍在积累证据的检验框架，不是预测准确率。',
+    macroSrcFred: '历史意外：FRED 实际值 + 发布日（代理，无 consensus）', macroSrcCal: '前向意外：经济日历真实 consensus（实际 − 预期）',
+    rateMod: '利率预期重定价 · 意外 → SOFR', rateModEn: 'Rate-Expectations Repricing',
+    rateDesc: '不预测联储决议（市场用 SOFR 期货早已定价、赢不了），而是量化一个可做可验的问题：一次意外把市场的隐含政策利率重定价了多少 bp、往哪个方向。目标 = SOFR 期货隐含利率的窗口变动；信号 = FOMC 鹰鸽分 / 宏观 surprise。方向命中无参数、天然样本外；β = 每 1 个标准差信号对应的重定价 bp。',
+    rateSignal: '信号源', rateFOMC: 'FOMC 鹰鸽分',
+    rateLimitLabel: '局限声明 · 不可弱化',
+    rateLimitText: '唯一稳定有效的信号是 FOMC 鹰鸽分（15min 方向命中 59%、β 跨窗口一致为正）——但 N=27 尚不统计显著（需约 19/27）。FRED 代理 surprise 命中 ≤50%、多为反号：这是个有价值的负结果，它证明宏观数据要贡献信号必须用真 consensus（实际−预期），前向日历轨正在逐月累积、几月后可重验。SOFR 仅覆盖 2022→今（2021 ZIRP 期对数据无反应）。结论作方法论演示，非统计显著、不构成投资建议。',
   },
   en: {
     eyebrow: 'FOMC hawk–dove read · structured, with an evaluation loop',
@@ -74,6 +86,18 @@ const I18N = {
     dHawkish: 'hawkish', dDovish: 'dovish', dNeutral: 'neutral',
     phHawk: 'Hiking · hawk', phHawkLean: 'Hawk-lean', phNeu: 'Neutral', phDoveLean: 'Dove-lean', phDove: 'Easing · dove',
     scaleHawk: 'hawk →', scaleDove: '← dove',
+    macroMod: 'Macro-data Attribution · Surprise vs Market', macroModEn: 'Macro Surprise vs Market',
+    macroDesc: 'Put hard-data "surprises" (CPI, core CPI, core PCE, non-farm payrolls) through the same three-instrument test: a hot print is hawkish and should weigh on gold, lift the dollar and push the 2-year yield up at once. The surprise source is split honestly — history uses a FRED proxy (actual vs its trailing 12-month mean, no market consensus), while forward releases use the real consensus from the economic calendar (actual − forecast).',
+    macroEvt: 'Release', macroPooled: 'Pooled · all',
+    macroTypes: { CPI: 'CPI', CoreCPI: 'Core CPI', CorePCE: 'Core PCE', NFP: 'Non-farm Payrolls' },
+    macroLimitLabel: 'Stated limitations · not to be softened',
+    macroLimitText: 'Pooled hit-rates sit around a coin flip (15min ≈46%, 1-day ≈54%) — which is exactly the point: the historical "proxy surprise" is a weak signal, since FRED carries no market expectation and a month-over-month deviation stands in for true consensus, adding directional noise. The forward track (real consensus) should be stronger but its N is still near zero and must accumulate over time. The three instruments are correlated, not independent, and multiple releases often share the same window — uncontrolled. This is an evidence-gathering test, not a prediction accuracy.',
+    macroSrcFred: 'Historical surprise · FRED actuals + release dates (proxy, no consensus)', macroSrcCal: 'Forward surprise · economic-calendar real consensus (actual − forecast)',
+    rateMod: 'Rate-Expectations Repricing · Surprise → SOFR', rateModEn: 'Rate-Expectations Repricing',
+    rateDesc: "Not a forecast of the Fed's decision (the market already prices that via SOFR futures — you can't beat it), but a testable question: how many bp, and in which direction, does a surprise reprice the market-implied policy rate? Target = the windowed change in SOFR-implied rate; signal = FOMC hawk-dove score / macro surprise. Directional hit is parameter-free and inherently out-of-sample; β = bp repriced per 1 SD of signal.",
+    rateSignal: 'Signal', rateFOMC: 'FOMC hawk-dove',
+    rateLimitLabel: 'Stated limitations · not to be softened',
+    rateLimitText: 'The only consistently useful signal is the FOMC hawk-dove score (59% directional hit at 15min, β positive across windows) — but N=27 is not yet statistically significant (~19/27 needed). FRED proxy surprises hit ≤50% and often with the wrong sign: a valuable negative result, proving that for macro data to carry signal it needs real consensus (actual − forecast), which the forward calendar track is accumulating month by month. SOFR covers 2022–present only (the 2021 ZIRP period does not react to data). Methodology demonstration, not statistically significant, not investment advice.',
   },
 };
 
@@ -272,6 +296,93 @@ function Attribution({ attr, t, lang }) {
   );
 }
 
+function MacroAttribution({ macro, t }) {
+  if (!macro) return null;
+  const wlabel = { '15': '15 min', '60': '1 hour', '1440': '1 day' };
+  const order = ['CPI', 'CoreCPI', 'CorePCE', 'NFP'];
+  const types = order.filter(et => macro.by_event_type && macro.by_event_type[et]);
+  const rateCell = (agg, w) => {
+    const c = agg.consensus[String(w)];
+    if (!c || c.hit_rate == null) return <td key={w} className="m-neu">—</td>;
+    const pct = Math.round(c.hit_rate * 100);
+    const cls = pct > 55 ? 'up' : pct < 45 ? 'down' : '';
+    return <td key={w}><span className={cls} style={{ fontWeight: 600 }}>{pct}%</span> <span className="macro-n">N={c.n_directional}</span></td>;
+  };
+  return (
+    <>
+      <div className="evt">
+        <table>
+          <thead><tr><th>{t.macroEvt}</th>{macro.windows_min.map(w => <th key={w}>{wlabel[String(w)] || w}</th>)}</tr></thead>
+          <tbody>
+            {types.map(et => (
+              <tr key={et}>
+                <td><b>{(t.macroTypes && t.macroTypes[et]) || et}</b> <span className="macro-n">{macro.by_event_type[et].n_events}</span></td>
+                {macro.windows_min.map(w => rateCell(macro.by_event_type[et].aggregate, w))}
+              </tr>
+            ))}
+            <tr className="macro-pooled">
+              <td><b>{t.macroPooled}</b> <span className="macro-n">{macro.n_events}</span></td>
+              {macro.windows_min.map(w => rateCell(macro.aggregate_pooled, w))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div className="limit">
+        <div className="limit__l"><span>⚑</span><span>{t.macroLimitLabel}</span></div>
+        <p className="limit__t">{t.macroLimitText}</p>
+      </div>
+      <div className="mp-sources">
+        <span className="src real">{t.macroSrcFred}</span>
+        <span className="src model">{t.macroSrcCal}</span>
+        <span className="src real">{t.srcGold}</span>
+      </div>
+    </>
+  );
+}
+
+function RateModel({ rm, t }) {
+  if (!rm || !rm.by_window) return null;
+  const wl = { '15': '15 min', '60': '1 hour', '1440': '1 day' };
+  const order = ['FOMC', 'CPI', 'CoreCPI', 'CorePCE', 'NFP'];
+  const labels = { FOMC: t.rateFOMC, ...(t.macroTypes || {}) };
+  const base = rm.by_window[String(rm.windows_min[0])].by_event_type;
+  const types = order.filter(et => base[et]);
+  const cell = (et, w) => {
+    const blk = rm.by_window[String(w)].by_event_type[et];
+    const d = blk && blk.directional;
+    if (!d || d.hit_rate == null) return <td key={w} className="m-neu">—</td>;
+    const pct = Math.round(d.hit_rate * 100);
+    const beta = blk.ols ? blk.ols.beta_bp : null;
+    const cls = pct > 55 ? 'up' : pct < 45 ? 'down' : '';
+    return <td key={w}><span className={cls} style={{ fontWeight: 600 }}>{pct}%</span> <span className="macro-n">β{beta > 0 ? '+' : ''}{beta != null ? beta : '—'}</span></td>;
+  };
+  return (
+    <>
+      <div className="evt">
+        <table>
+          <thead><tr><th>{t.rateSignal}</th>{rm.windows_min.map(w => <th key={w}>{wl[String(w)] || w}</th>)}</tr></thead>
+          <tbody>
+            {types.map(et => (
+              <tr key={et} className={et === 'FOMC' ? 'rate-hot' : ''}>
+                <td><b>{labels[et] || et}</b> {et === 'FOMC' && <span className="macro-n">✓ {base[et].directional.n}</span>}</td>
+                {rm.windows_min.map(w => cell(et, w))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="limit">
+        <div className="limit__l"><span>⚑</span><span>{t.rateLimitLabel}</span></div>
+        <p className="limit__t">{t.rateLimitText}</p>
+      </div>
+      <div className="mp-sources">
+        <span className="src model">{t.srcScores}</span>
+        <span className="src real">SOFR · CME 3M futures (2022–present)</span>
+      </div>
+    </>
+  );
+}
+
 function Queue({ queue, t }) {
   if (!queue) return null;
   const chip = (r) => {
@@ -306,6 +417,8 @@ const MacroPulse = () => {
 
   const scoresData = useFetch('/api/macro/scores');
   const attr = useFetch('/api/macro/attribution');
+  const macroAttr = useFetch('/api/macro/macro-attribution');
+  const rateModel = useFetch('/api/macro/rate-model');
   const queueData = useFetch('/api/macro/adjudication-queue');
 
   const scores = scoresData?.scores;
@@ -365,7 +478,19 @@ const MacroPulse = () => {
           </section>
 
           <section className="mod">
-            <div className="mod__head"><span className="mod__num">04</span><h2 className="mod__title">{t.mod4}</h2><span className="mod__en">Adjudication Queue</span></div>
+            <div className="mod__head"><span className="mod__num">04</span><h2 className="mod__title">{t.macroMod}</h2><span className="mod__en">{t.macroModEn}</span></div>
+            <p className="mod__desc">{t.macroDesc}</p>
+            <MacroAttribution macro={macroAttr} t={t} />
+          </section>
+
+          <section className="mod">
+            <div className="mod__head"><span className="mod__num">05</span><h2 className="mod__title">{t.rateMod}</h2><span className="mod__en">{t.rateModEn}</span></div>
+            <p className="mod__desc">{t.rateDesc}</p>
+            <RateModel rm={rateModel} t={t} />
+          </section>
+
+          <section className="mod">
+            <div className="mod__head"><span className="mod__num">06</span><h2 className="mod__title">{t.mod4}</h2><span className="mod__en">Adjudication Queue</span></div>
             <p className="mod__desc">{t.mod4desc}</p>
             <Queue queue={queueData?.queue} t={t} />
           </section>

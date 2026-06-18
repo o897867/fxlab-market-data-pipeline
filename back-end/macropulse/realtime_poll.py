@@ -19,10 +19,11 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://api.insightsentry.com/v3"
 POLL_INTERVAL = 60
 
-# symbol -> 落库表
+# symbol -> (落库表, dp 小数位)。SOFR 期货价 ~96.x，需 dp=4 才能分辨半个 bp。
 INSTRUMENTS = {
-    "IS:DXY": "dxy_candles_1m",
-    "IS:US02Y": "us2y_candles_1m",
+    "IS:DXY": ("dxy_candles_1m", 2),
+    "IS:US02Y": ("us2y_candles_1m", 2),
+    "CME:SR31!": ("sofr_candles_1m", 4),
 }
 
 
@@ -68,12 +69,12 @@ async def _fetch(session, api_key: str, symbol: str, dp: int = 2) -> list:
         return out
 
 
-async def _poll_one(api_key: str, db_path: str, symbol: str, table: str):
+async def _poll_one(api_key: str, db_path: str, symbol: str, table: str, dp: int = 2):
     _ensure_table(db_path, table)
     async with aiohttp.ClientSession() as session:
         while True:
             try:
-                candles = await _fetch(session, api_key, symbol)
+                candles = await _fetch(session, api_key, symbol, dp=dp)
                 if candles:
                     _upsert(db_path, table, candles)
                     logger.debug("📈 %s 轮询 %d 条, 最新 close=%s", symbol, len(candles), candles[-1]["close"])
@@ -84,7 +85,7 @@ async def _poll_one(api_key: str, db_path: str, symbol: str, table: str):
 
 def start_pollers(api_key: str, db_path: str) -> list:
     """为每个标的起一个轮询任务。返回 task 列表（供停止）。"""
-    tasks = [asyncio.create_task(_poll_one(api_key, db_path, sym, tab))
-             for sym, tab in INSTRUMENTS.items()]
-    logger.info("✅ DXY/US2Y 前向轮询已启动（REST，%ds 间隔）", POLL_INTERVAL)
+    tasks = [asyncio.create_task(_poll_one(api_key, db_path, sym, tab, dp))
+             for sym, (tab, dp) in INSTRUMENTS.items()]
+    logger.info("✅ DXY/US2Y/SOFR 前向轮询已启动（REST，%ds 间隔）", POLL_INTERVAL)
     return tasks

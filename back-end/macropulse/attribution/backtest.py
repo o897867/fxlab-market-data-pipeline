@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import logging
+import sqlite3
 from typing import Optional
 
 from macropulse import config
@@ -21,11 +22,19 @@ logger = logging.getLogger(__name__)
 INSTRUMENTS = ("XAU", "DXY", "US2Y")
 
 
-def build_event(score: dict, prices_by_inst: dict, windows: list[int] = None) -> dict:
-    """单事件归因：分数 + 每标的各窗口收益 + 命中。"""
+def build_event(score: dict, prices_by_inst: dict, windows: list[int] = None,
+                t0_ms: int = None) -> dict:
+    """单事件归因：分数 + 每标的各窗口收益 + 命中。
+
+    t0_ms 显式给定时直接用（宏观事件 8:30 ET，时戳由源带来）；
+    否则按 FOMC 约定从 meeting_date 推 14:00 ET。
+    """
     windows = windows or config.ATTRIBUTION_WINDOWS_MIN
     date = score["meeting_date"]
-    t0 = events.release_ts_ms(date)
+    t0 = t0_ms if t0_ms is not None else events.release_ts_ms(date)
+    release_iso = (__import__("datetime").datetime
+                   .fromtimestamp(t0 / 1000, tz=__import__("datetime").timezone.utc).isoformat()
+                   if t0_ms is not None else events.release_utc(date).isoformat())
 
     reactions = {}
     exp_signs = {}
@@ -43,15 +52,20 @@ def build_event(score: dict, prices_by_inst: dict, windows: list[int] = None) ->
             rmap[str(w)] = {**r, "return_sign": ret_sign, "hit": hit}
         reactions[inst] = rmap
 
-    return {
+    rec = {
         "document_id": score["document_id"],
         "meeting_date": date,
-        "release_utc": events.release_utc(date).isoformat(),
+        "release_utc": release_iso,
         "overall_score": score["overall_score"],
         "confidence_overall": score.get("confidence_overall"),
         "expected_signs": exp_signs,
         "reactions": reactions,
     }
+    # 宏观事件透传额外字段（前端/审计用），FOMC 声明无这些键则不带。
+    for k in ("event_type", "surprise", "surprise_source", "actual", "forecast"):
+        if k in score:
+            rec[k] = score[k]
+    return rec
 
 
 def _pearson(xs: list[float], ys: list[float]) -> Optional[float]:
@@ -143,4 +157,55 @@ def run(store, windows: list[int] = None) -> dict:
         "skipped_dates": skipped,
         "events": records,
         "aggregate": aggregate(records, windows),
+    }
+
+
+def run_macro(conn: sqlite3.Connection = None, windows: list[int] = None,
+              event_types: tuple = None) -> dict:
+    """宏观数据事件（CPI/核心CPI/核心PCE/非农）归因——复用三标的机器。
+
+    事件取自 macro_releases（surprise_z 当 overall_score），t0 由源带的精确发布时戳。
+    按 event_type 分组聚合 + 一个 pooled 总聚合。
+    """
+    from macropulse.attribution import macro_events
+
+    windows = windows or config.ATTRIBUTION_WINDOWS_MIN
+    own = conn is None
+    conn = conn or sqlite3.connect(config.PRICE_DB_PATH)
+    prices_by_inst = {inst: InstrumentPrices(conn=conn, table=events.INSTRUMENT_TABLE[inst])
+                      for inst in INSTRUMENTS}
+    try:
+        lo, hi = prices_by_inst["XAU"].coverage()
+        evs = macro_events.load_events(conn)
+        records, skipped = [], []
+        for ev in evs:
+            if event_types and ev["event_type"] not in event_types:
+                continue
+            t0 = ev["release_ts_ms"]
+            if lo is None or t0 < lo or t0 > hi:
+                skipped.append(ev["document_id"])
+                continue
+            records.append(build_event(ev, prices_by_inst, windows, t0_ms=t0))
+    finally:
+        if own:
+            conn.close()
+
+    by_type = {}
+    for et in sorted({r["event_type"] for r in records}):
+        subset = [r for r in records if r["event_type"] == et]
+        by_type[et] = {"n_events": len(subset), "aggregate": aggregate(subset, windows)}
+
+    logger.info("宏观归因：%d 个事件有价格覆盖，%d 个超范围跳过", len(records), len(skipped))
+    return {
+        "instruments": list(INSTRUMENTS),
+        "directions": events.INSTRUMENT_DIR,
+        "windows_min": windows,
+        "n_events": len(records),
+        "n_skipped_no_price": len(skipped),
+        "surprise_note": ("历史段 surprise 用 FRED 'actual vs 近12期均值' 代理"
+                          "(无 consensus)；前向段用 actual−forecast 真 consensus。"
+                          "命中率按 surprise 符号判定，混合两段。"),
+        "by_event_type": by_type,
+        "aggregate_pooled": aggregate(records, windows),
+        "events": records,
     }
