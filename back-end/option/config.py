@@ -24,7 +24,8 @@ SNAPSHOT_DIR = os.getenv(
 DEFAULT_RANGE_PCT = int(os.getenv("OPTION_RANGE_PCT", "20"))
 
 # v1 先锁流动性好的标的（doc：MU/SPY 这类）
-DEFAULT_SYMBOLS = os.getenv("OPTION_SYMBOLS", "NASDAQ:MU,AMEX:SPY").split(",")
+DEFAULT_SYMBOLS = os.getenv(
+    "OPTION_SYMBOLS", "NASDAQ:MU,AMEX:SPY,NYSE:ORCL,NASDAQ:GOOG").split(",")
 
 # dbt-duckdb 产物库（mart_* 在 main_marts schema）。服务层只读它出三面板。
 DUCKDB_PATH = os.getenv(

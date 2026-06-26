@@ -8,6 +8,8 @@ const API = import.meta.env.VITE_API_URL || '';
 const SYMS = [
   { code: 'NASDAQ:MU', short: 'MU', cn: '美光' },
   { code: 'AMEX:SPY', short: 'SPY', cn: '标普500' },
+  { code: 'NYSE:ORCL', short: 'ORCL', cn: '甲骨文' },
+  { code: 'NASDAQ:GOOG', short: 'GOOG', cn: '谷歌' },
 ];
 
 function useFetch(url) {
@@ -81,7 +83,7 @@ const OptionLens = () => {
   const [notes, setNotes] = useState({});
   const toggle = k => setNotes(n => ({ ...n, [k]: !n[k] }));
 
-  const cycleSym = () => setSym(s => SYMS[(SYMS.findIndex(x => x.code === s.code) + 1) % SYMS.length]);
+  const [menu, setMenu] = useState(false);
 
   const maxOI = dist && dist.available
     ? Math.max(1, ...dist.strikes.flatMap(s => [s.call_oi, s.put_oi])) : 1;
@@ -92,9 +94,21 @@ const OptionLens = () => {
       <div className="olp">
         <div className="ol-bar">
           <div className="ol-brand">期权<span className="lt">透镜</span></div>
-          <button className="ol-ticker" onClick={cycleSym}>
-            {sym.short} <span className="cn">{sym.cn}</span> <span className="car">▾</span>
-          </button>
+          <div className="ol-tickwrap">
+            <button className="ol-ticker" onClick={() => setMenu(m => !m)}>
+              {sym.short} <span className="cn">{sym.cn}</span> <span className="car">▾</span>
+            </button>
+            {menu && (
+              <div className="ol-menu">
+                {SYMS.map(s => (
+                  <button key={s.code} className={`ol-menu__item${s.code === sym.code ? ' on' : ''}`}
+                    onClick={() => { setSym(s); setMenu(false); setProb(null); setTarget(''); setSel(null); }}>
+                    {s.short} <span className="cn">{s.cn}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="wrap">
