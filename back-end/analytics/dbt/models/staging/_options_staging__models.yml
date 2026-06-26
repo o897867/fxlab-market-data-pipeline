@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: stg_options_quotes
+    description: "期权报价链 staging：bid/ask + IV + 希腊值，1 行 = 1 合约 1 次快照。"
+    columns:
+      - name: code
+        description: "OPRA 合约码（两源 join 键）。"
+        data_tests: [not_null]
+      - name: strike
+        data_tests: [not_null]
+      - name: option_type
+        data_tests:
+          - accepted_values: {values: ["CALL", "PUT"]}
+      - name: iv
+        description: "隐含波动率（小数，0.5 = 50%）。"
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 5, inclusive: false}
+      - name: delta
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: -1, max_value: 1}
+
+  - name: stg_options_contracts
+    description: "期权合约 staging：未平仓量 OI（截至昨收）。"
+    columns:
+      - name: code
+        data_tests: [not_null]
+      - name: open_interest
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: true}
+
+  - name: stg_options_underlying
+    description: "标的现价 staging（快照时刻 last_price）。"
+    columns:
+      - name: underlying_code
+        data_tests: [not_null]
+      - name: spot
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: false}

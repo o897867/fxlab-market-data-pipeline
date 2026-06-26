@@ -1,0 +1,59 @@
+name: "fxlab_eventstudy"
+version: "1.0.0"
+config-version: 2
+
+# 这个 dbt 项目只做分析建模，数据源是只读挂载的 SQLite 主库。
+# 它不写回任何业务表，产物全部落在独立的 DuckDB 分析库里。
+profile: "fxlab_eventstudy"
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# 分层约定：
+#   staging  -> 视图，轻量清洗/重命名/类型转换，一张源表对一个 stg 模型
+#   marts    -> 物化表，业务语义层（intermediate + 事实宽表）
+models:
+  fxlab_eventstudy:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: marts
+
+# 事件研究的窗口参数集中在这里，模型里用 var() 引用，避免散落的魔法数字。
+vars:
+  # ===== OptionLens：期权链快照 Parquet 根目录（option/extract.py 落地处）=====
+  option_snapshot_dir: "{{ env_var('OPTION_SNAPSHOT_DIR', '/root/shopback/ShopBack_PP/back-end/option/data/snapshots') }}"
+
+  # 滚动估计窗口：用 t-25 ~ t-6 的已实现波动率均值作为「预期波动率」基线，
+  # 留 5 个交易日的间隔，避免事件本身污染基线。
+  baseline_window_long: 25
+  baseline_window_gap: 6
+  # 事件后/前的观测窗口（交易日）
+  event_windows: [1, 3, 7]
+  # 数据可用重叠区：情绪标注约从 2025-12-01 开始
+  analysis_start_date: "2025-12-01"
+  # 一个交易日至少要有这么多根 1m K 线才算有效（过滤半日市/数据缺口）
+  min_bars_per_day: 120
+  # 一个交易日至少要有这么多条黄金相关已标注新闻才算一个有效事件
+  min_articles_per_day: 5
+
+  # ===== 盘中（事件级）事件研究参数 =====
+  # 事件前后观测窗口（分钟）。t=0 用 received_ts（信息实际可反应时刻）。
+  event_windows_min: [30, 60, 120]
+  # 范围连接时拉取的最大半窗（分钟），应等于 event_windows_min 的最大值。
+  max_window_min: 120
+  # 相邻 1m K 线时间差 ≤ 该秒数才计入对数收益，避免休市缺口污染已实现波动率。
+  max_bar_gap_sec: 120
+  # 事件最小窗口(±event_windows_min[0]=30m)两侧各至少要有这么多根 K 线才算有效事件，
+  # 过滤掉落在休市/数据缺口附近、无法可靠计算盘中波动率的新闻。
+  min_bars_window: 20
+  # 发布->收到滞后 > 该分钟数的新闻标记为 is_stale（t=0 时点不可靠，敏感性分析里剔除）。
+  stale_lag_min: 120

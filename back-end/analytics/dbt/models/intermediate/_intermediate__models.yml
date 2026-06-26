@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: int_option_chain
+    description: >
+      期权链宽表：quotes ⋈ contracts ON code（每标的最新快照），附 mid / T / moneyness。
+      v1 三面板的公共底座。
+    columns:
+      - name: code
+        description: "OPRA 合约码；最新快照内唯一。"
+        data_tests: [not_null, unique]
+      - name: underlying_code
+        data_tests: [not_null]
+      - name: option_type
+        data_tests:
+          - accepted_values: {values: ["CALL", "PUT"]}
+      - name: t_years
+        description: "年化到期时间（日历日/365）。"
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: true}
+      - name: iv
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 5, inclusive: false}
+      - name: spot
+        data_tests: [not_null]

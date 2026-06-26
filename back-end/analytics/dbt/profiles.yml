@@ -1,0 +1,16 @@
+fxlab_eventstudy:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # 分析产物落在这个独立的 DuckDB 文件里，与业务 SQLite 完全隔离。
+      path: "{{ env_var('DBT_DUCKDB_PATH', 'eventstudy.duckdb') }}"
+      threads: 4
+      extensions:
+        - sqlite
+      # 只读挂载业务主库。read_only=true 保证 dbt 绝不会写回 SQLite。
+      attach:
+        - path: "{{ env_var('FXLAB_SQLITE_PATH', '/root/shopback/ShopBack_PP/back-end/shopback_data.db') }}"
+          alias: src
+          type: sqlite
+          read_only: true

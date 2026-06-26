@@ -1,0 +1,8 @@
+# dbt 编译产物与日志
+target/
+dbt_packages/
+logs/
+
+# 本地 DuckDB 分析库（可由 dbt run 重新生成，不入库）
+*.duckdb
+*.duckdb.wal
