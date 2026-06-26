@@ -126,12 +126,12 @@ def _interp(x: float, pts: list[tuple]) -> float:
 
 # ----------------------------------------------------------------- 面板③押注分布
 
-def distribution(symbol: str, expiry: str | None = None, top: int = 6) -> dict:
+def distribution(symbol: str, expiry: str | None = None, top: int = 10) -> dict:
     con = _con()
     try:
         exp = _pick_expiry(con, "mart_strike_distribution", symbol, expiry)
         rows = con.execute(
-            "SELECT strike, call_oi, put_oi, total_oi, is_wall, max_pain_strike, pc_ratio "
+            "SELECT strike, call_oi, put_oi, total_oi, is_wall, max_pain_strike, pc_ratio, spot "
             "FROM main_marts.mart_strike_distribution WHERE underlying_code=? AND expiration=? "
             "ORDER BY total_oi DESC", [symbol, exp]).fetchall()
     finally:
@@ -150,8 +150,11 @@ def distribution(symbol: str, expiry: str | None = None, top: int = 6) -> dict:
     ca = f"${call_walls[0]['strike']:.0f} 挤满赌涨" if call_walls else ""
     pa = "、".join(f"${s['strike']:.0f}" for s in put_walls)
     headline = f"{name} 押得最多的:{ca}" + (f",{pa} 堆着买保护" if pa else "")
+    # 梯子展示：取 OI 最大的 top 个价位，再按价格降序排（高价在上，符合设计阶梯）
+    ladder = sorted(strikes[:top], key=lambda s: s["strike"], reverse=True)
     return {
         "symbol": symbol, "available": True, "expiry": str(exp), "headline": headline,
-        "strikes": strikes[:top], "max_pain": max_pain, "pc_ratio": round(pc_ratio, 3),
+        "spot": float(rows[0][7]),
+        "strikes": ladder, "max_pain": max_pain, "pc_ratio": round(pc_ratio, 3) if pc_ratio else None,
         "sub": "未平仓量截至昨收;磁吸位（max pain）是临近到期股价容易被拉向的价位",
     }

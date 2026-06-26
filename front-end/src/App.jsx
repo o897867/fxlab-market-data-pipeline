@@ -23,6 +23,7 @@ const LeverageCalculator = lazy(() => import('./pages/LeverageCalculator.jsx'));
 const Guide = lazy(() => import('./pages/Guide.jsx'));
 const Analytics = lazy(() => import('./pages/Analytics.jsx'));
 const MacroPulse = lazy(() => import('./pages/MacroPulse.jsx'));
+const OptionLens = lazy(() => import('./pages/OptionLens.jsx'));
 import { LanguageProvider } from './hooks/useLanguage.jsx';
 import TopNav from './components/TopNav.jsx';
 
@@ -56,7 +57,7 @@ const App = () => {
     try {
       const raw = (window.location.hash || '').replace('#', '').trim();
       const hash = raw.split('?')[0];
-      const known = ['home','news','fortune','leverage-calculator','guide','analytics','macro-pulse'];
+      const known = ['home','news','fortune','leverage-calculator','guide','analytics','macro-pulse','option-lens'];
       if (hash && known.includes(hash)) return hash;
       const saved = localStorage.getItem('currentPage');
       if (saved && known.includes(saved)) return saved;
@@ -79,7 +80,7 @@ const App = () => {
 
   // Listen for external hash changes (e.g. TopNav without onNavigate)
   useEffect(() => {
-    const known = ['home','forum','forum-mod','predictions','news','health','health-token','health-match','trading','orderbook','fortune','leverage-calculator','guide','login','register','withdrawal-rate','liquidity-crisis','analytics','macro-pulse'];
+    const known = ['home','forum','forum-mod','predictions','news','health','health-token','health-match','trading','orderbook','fortune','leverage-calculator','guide','login','register','withdrawal-rate','liquidity-crisis','analytics','macro-pulse','option-lens'];
     const onHashChange = () => {
       const hash = (window.location.hash || '').replace('#', '').split('?')[0];
       if (hash && known.includes(hash) && hash !== currentPage) {
@@ -178,6 +179,10 @@ const HashApp = ({ currentPage, setCurrentPage }) => {
       ) : currentPage === 'macro-pulse' ? (
         <Suspense fallback={<div className="muted">Loading…</div>}>
           <MacroPulse onNavigate={setCurrentPage} />
+        </Suspense>
+      ) : currentPage === 'option-lens' ? (
+        <Suspense fallback={<div className="muted">Loading…</div>}>
+          <OptionLens onNavigate={setCurrentPage} />
         </Suspense>
       ) : null}
     </div>
