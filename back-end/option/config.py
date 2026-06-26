@@ -25,3 +25,11 @@ DEFAULT_RANGE_PCT = int(os.getenv("OPTION_RANGE_PCT", "20"))
 
 # v1 先锁流动性好的标的（doc：MU/SPY 这类）
 DEFAULT_SYMBOLS = os.getenv("OPTION_SYMBOLS", "NASDAQ:MU,AMEX:SPY").split(",")
+
+# dbt-duckdb 产物库（mart_* 在 main_marts schema）。服务层只读它出三面板。
+DUCKDB_PATH = os.getenv(
+    "DBT_DUCKDB_PATH",
+    os.path.join(os.path.dirname(__file__), "..", "analytics", "dbt", "eventstudy.duckdb"))
+
+# 选到期日时跳过的最小剩余天数（避开 0DTE/当周噪声）
+MIN_DTE = int(os.getenv("OPTION_MIN_DTE", "7"))

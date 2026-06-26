@@ -232,6 +232,10 @@ app.include_router(analytics_router, tags=["Analytics"])
 from routers.macro_router import router as macro_router
 app.include_router(macro_router, tags=["MacroPulse"])
 
+# ============= OptionLens 期权透镜模块 =============
+from routers.option_router import router as option_router
+app.include_router(option_router, tags=["OptionLens"])
+
 # ============= Weekly Mindmap 模块 =============
 from weekly.router import router as weekly_router
 app.include_router(weekly_router)
