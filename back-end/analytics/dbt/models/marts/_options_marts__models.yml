@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: mart_expected_move
+    description: "面板①预期范围：每(标的,到期日) 的 ATM IV、expected move、band_low/high、pct。"
+    data_tests:
+      - dbt_utils.expression_is_true: {expression: "band_low < band_high"}
+    columns:
+      - name: underlying_code
+        data_tests: [not_null]
+      - name: expiration
+        data_tests: [not_null]
+      - name: pct
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: false}
+
+  - name: mart_probability_curve
+    description: "面板②问问市场：每(标的,到期日,call行权价) 的 prob_above（call delta 风险中性概率）。"
+    columns:
+      - name: prob_above
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 1}
+
+  - name: mart_strike_distribution
+    description: "面板③押注分布：每(标的,到期日,行权价) 的 call/put OI、is_wall，附 max_pain、pc_ratio。"
+    columns:
+      - name: call_oi
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: true}
+      - name: put_oi
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: true}
