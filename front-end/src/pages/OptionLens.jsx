@@ -56,6 +56,38 @@ function BandChart({ spot, low, high }) {
 
 const moodOf = p => (p >= 0.55 ? '挺有可能' : p >= 0.25 ? '机会一般' : '有点难');
 
+/* ── ⑤ 期限结构：ATM IV vs 距到期天数 折线 ── */
+function TermPanel({ ts }) {
+  if (!ts) return <div className="ol-empty">加载中…</div>;
+  if (!ts.available) return <div className="ol-empty">该标的暂无快照数据</div>;
+  const c = ts.curve;
+  const W = 520, H = 240, padL = 46, padR = 22, padT = 18, padB = 34;
+  const dtes = c.map(p => p.dte), ivs = c.map(p => p.iv_pct);
+  const xMin = Math.min(...dtes), xMax = Math.max(...dtes);
+  const yMin = Math.min(...ivs), yMax = Math.max(...ivs);
+  const xs = d => padL + (d - xMin) / (xMax - xMin || 1) * (W - padL - padR);
+  const ys = v => H - padB - (v - yMin) / (yMax - yMin || 1) * (H - padT - padB);
+  const pts = c.map(p => `${xs(p.dte).toFixed(1)},${ys(p.iv_pct).toFixed(1)}`).join(' ');
+  const shapeTag = ts.shape === 'backwardation' ? ['近月更贵 · 近期有事', 'mid']
+    : ts.shape === 'contango' ? ['远月更贵 · 常态', 'high'] : ['平 · 无特别定价', 'low'];
+  return (
+    <section className="card imp-card">
+      <p className="card__eyebrow"><span className="n">05</span><span>期限结构 · TERM STRUCTURE</span><span className="rule" /></p>
+      <p className="lead" style={{ fontSize: 17, marginBottom: 8 }}>{ts.headline}</p>
+      <span className={`imp-tier lv-${shapeTag[1]}`}>{shapeTag[0]}</span>
+      <svg className="ts-svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
+        <polyline className="ts-line" points={pts} />
+        {c.map(p => <circle key={p.dte} className="ts-dot" cx={xs(p.dte)} cy={ys(p.iv_pct)} r="3" />)}
+        <text className="band-ax" x={padL - 7} y={ys(yMax) + 3} textAnchor="end">{yMax.toFixed(0)}%</text>
+        <text className="band-ax" x={padL - 7} y={ys(yMin) + 3} textAnchor="end">{yMin.toFixed(0)}%</text>
+        <text className="band-ax" x={xs(xMin)} y={H - padB + 18} textAnchor="middle">{xMin}天</text>
+        <text className="band-ax" x={xs(xMax)} y={H - padB + 18} textAnchor="middle">{xMax}天</text>
+      </svg>
+      <p className="caption">{ts.sub}</p>
+    </section>
+  );
+}
+
 /* ── ④ 影响面板：可信度从高到低，GEX(低)整块淡红底提醒 ── */
 function ImpactPanel({ imp }) {
   if (!imp) return <div className="ol-empty">加载中…</div>;
@@ -85,6 +117,7 @@ const OptionLens = () => {
   const em = useFetch(`/api/option/expected-move?symbol=${sym.code}`);
   const dist = useFetch(`/api/option/distribution?symbol=${sym.code}`);
   const imp = useFetch(tab === 'impact' ? `/api/option/impact?symbol=${sym.code}` : null);
+  const ts = useFetch(tab === 'term' ? `/api/option/term-structure?symbol=${sym.code}` : null);
 
   // ② 目标价 → 防抖查概率
   const [target, setTarget] = useState('');
@@ -137,13 +170,13 @@ const OptionLens = () => {
         </div>
 
         <div className="ol-tabs">
-          {[['overview', '总览'], ['impact', '影响']].map(([k, label]) => (
+          {[['overview', '总览'], ['impact', '影响'], ['term', '期限']].map(([k, label]) => (
             <button key={k} className={`ol-tab${tab === k ? ' on' : ''}`} onClick={() => setTab(k)}>{label}</button>
           ))}
         </div>
 
         <div className="wrap">
-          {tab === 'impact' ? <ImpactPanel imp={imp} /> : (
+          {tab === 'impact' ? <ImpactPanel imp={imp} /> : tab === 'term' ? <TermPanel ts={ts} /> : (
           <div className="ol-cols">
           <div className="ol-col">
           {/* ① 预期范围 */}

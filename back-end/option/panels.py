@@ -187,6 +187,36 @@ def distribution(symbol: str, expiry: str | None = None, top: int = 10) -> dict:
 import math
 
 
+# ----------------------------------------------------------------- 面板⑤期限结构
+
+_TS_HEAD = {
+    "backwardation": "市场觉得未来几周的波动会比几个月后明显更大 → 通常意味着近期有大事(比如财报)。",
+    "contango": "市场觉得越往后越不确定、近期没什么特别的事 —— 这是常态。",
+    "flat": "近期和远期的波动预期差不多,市场没在为某个时点特别定价。",
+}
+
+
+def term_structure(symbol: str) -> dict:
+    """近月 vs 远月 ATM IV 曲线 + 形态(backwardation 近期有事 / contango 常态)。"""
+    con = _con()
+    try:
+        rows = con.execute(
+            "SELECT dte, atm_iv, expiration, shape_flag FROM main_marts.mart_term_structure "
+            "WHERE underlying_code=? ORDER BY dte", [symbol]).fetchall()
+    finally:
+        con.close()
+    if not rows:
+        return {"symbol": symbol, "available": False}
+    shape = rows[0][3]
+    curve = [{"dte": int(r[0]), "iv": round(float(r[1]), 4),
+              "iv_pct": round(float(r[1]) * 100, 1), "expiry": str(r[2])} for r in rows]
+    name = _sym_short(symbol)
+    return {"symbol": symbol, "available": True, "shape": shape,
+            "headline": f"{name}：" + _TS_HEAD.get(shape, ""),
+            "curve": curve,
+            "sub": "横轴=距到期天数,纵轴=市场对该期波动的定价(隐含波动率)。"}
+
+
 # ----------------------------------------------------------------- 面板④影响
 
 def impact(symbol: str, expiry: str | None = None) -> dict:

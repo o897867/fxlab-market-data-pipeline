@@ -32,6 +32,15 @@ models:
         data_tests:
           - accepted_values: {values: ["suppress", "amplify"]}
 
+  - name: mart_term_structure
+    description: "面板⑤期限结构：每(标的,到期日) 的 ATM IV + 曲线形态(backwardation/contango/flat)。"
+    columns:
+      - name: atm_iv
+        data_tests: [not_null]
+      - name: shape_flag
+        data_tests:
+          - accepted_values: {values: ["backwardation", "contango", "flat"]}
+
   - name: mart_strike_distribution
     description: "面板③押注分布：每(标的,到期日,行权价) 的 call/put OI、is_wall，附 max_pain、pc_ratio。"
     columns:

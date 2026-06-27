@@ -137,3 +137,8 @@
 .olp .imp-detail { font-family: var(--sans); font-size: 11.5px; line-height: 1.5; color: var(--ol-3); margin: 0; }
 /* GEX(低可信度)整块淡红底，提醒"这是估算、可能错" */
 .olp .imp-item.lv-low { background: #fdf6f6; margin: 6px -14px 0; padding: 14px; border-radius: 10px; border-top: none; }
+
+/* ⑤ 期限结构折线 */
+.olp .ts-svg { width: 100%; height: auto; max-height: 270px; display: block; margin: 14px 0 4px; }
+.olp .ts-line { fill: none; stroke: var(--ol-ink); stroke-width: 1.6; }
+.olp .ts-dot { fill: var(--ol-ink); }
