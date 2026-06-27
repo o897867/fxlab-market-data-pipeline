@@ -21,6 +21,17 @@ models:
         data_tests:
           - dbt_utils.accepted_range: {min_value: 0, max_value: 1}
 
+  - name: mart_impact
+    description: "面板④影响：每(标的,到期日) 的磁吸位/事件预期(front vs baseline IV)/GEX regime。"
+    columns:
+      - name: front_iv
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 10, inclusive: false}
+      - name: gex_regime
+        data_tests:
+          - accepted_values: {values: ["suppress", "amplify"]}
+
   - name: mart_strike_distribution
     description: "面板③押注分布：每(标的,到期日,行权价) 的 call/put OI、is_wall，附 max_pain、pc_ratio。"
     columns:

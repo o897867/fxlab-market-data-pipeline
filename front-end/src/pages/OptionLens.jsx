@@ -56,10 +56,35 @@ function BandChart({ spot, low, high }) {
 
 const moodOf = p => (p >= 0.55 ? '挺有可能' : p >= 0.25 ? '机会一般' : '有点难');
 
+/* ── ④ 影响面板：可信度从高到低，GEX(低)整块淡红底提醒 ── */
+function ImpactPanel({ imp }) {
+  if (!imp) return <div className="ol-empty">加载中…</div>;
+  if (!imp.available) return <div className="ol-empty">该标的暂无快照数据</div>;
+  return (
+    <section className="card imp-card">
+      <p className="card__eyebrow"><span className="n">04</span><span>期权怎么影响正股 · IMPACT</span><span className="rule" /></p>
+      <p className="imp-sub">{imp.sub}</p>
+      {imp.items.map(it => (
+        <div key={it.key} className={`imp-item lv-${it.tier_level}`}>
+          <div className="imp-item__top">
+            <span className="imp-item__title">{it.title}</span>
+            <span className="imp-item__val">{it.value}</span>
+          </div>
+          <span className={`imp-tier lv-${it.tier_level}`}>{it.tier_level === 'low' ? '⚠ ' : ''}{it.tier}</span>
+          <p className="imp-head">{it.headline}</p>
+          <p className="imp-detail">{it.detail}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
 const OptionLens = () => {
   const [sym, setSym] = useState(SYMS[0]);
+  const [tab, setTab] = useState('overview');
   const em = useFetch(`/api/option/expected-move?symbol=${sym.code}`);
   const dist = useFetch(`/api/option/distribution?symbol=${sym.code}`);
+  const imp = useFetch(tab === 'impact' ? `/api/option/impact?symbol=${sym.code}` : null);
 
   // ② 目标价 → 防抖查概率
   const [target, setTarget] = useState('');
@@ -111,7 +136,14 @@ const OptionLens = () => {
           </div>
         </div>
 
+        <div className="ol-tabs">
+          {[['overview', '总览'], ['impact', '影响']].map(([k, label]) => (
+            <button key={k} className={`ol-tab${tab === k ? ' on' : ''}`} onClick={() => setTab(k)}>{label}</button>
+          ))}
+        </div>
+
         <div className="wrap">
+          {tab === 'impact' ? <ImpactPanel imp={imp} /> : (
           <div className="ol-cols">
           <div className="ol-col">
           {/* ① 预期范围 */}
@@ -218,6 +250,7 @@ const OptionLens = () => {
 
           </div>
           </div>
+          )}
           <p className="ol-foot">期权透镜 · 市场信号翻译,仅供参考,不构成投资建议</p>
         </div>
       </div>

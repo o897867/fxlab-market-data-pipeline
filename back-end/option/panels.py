@@ -184,6 +184,68 @@ def distribution(symbol: str, expiry: str | None = None, top: int = 10) -> dict:
     }
 
 
+import math
+
+
+# ----------------------------------------------------------------- 面板④影响
+
+def impact(symbol: str, expiry: str | None = None) -> dict:
+    """期权怎么影响正股。三子模块按可信度排序：事件预期(最可信) > 磁吸位 > GEX(估算)。
+    可信度标签是产品诚信底线（doc §3.2）——把"定价事实"和"估算猜测"明明白白分开。"""
+    con = _con()
+    try:
+        exp = _pick_expiry(con, "mart_impact", symbol, expiry)
+        row = con.execute(
+            "SELECT spot, dte, front_iv, baseline_iv, front_premium_pct, event_flag, "
+            "max_pain_strike, magnet_strikes, net_gex, gex_regime "
+            "FROM main_marts.mart_impact WHERE underlying_code=? AND expiration=?",
+            [symbol, exp]).fetchone()
+    finally:
+        con.close()
+    if not row:
+        return {"symbol": symbol, "available": False}
+    spot, dte, fiv, biv, prem, ev, mp, magnets, net_gex, regime = row
+    spot = float(spot)
+    name = _sym_short(symbol)
+    em_pct = float(fiv) * math.sqrt(max(int(dte), 1) / 365) if fiv else 0
+
+    items = []
+    # B 事件预期 —— 最可信（定价事实）
+    if ev:
+        head = f"近月期权定价了 ±{em_pct*100:.0f}% 的波动,明显高于之后到期 → 市场把近期当大事(常是财报)。"
+    else:
+        head = f"近月与之后到期的期权定价的波动差不多({prem:+.0f}%),市场没在为近期某个特定事件额外定价。"
+    items.append({"key": "event", "title": "事件预期",
+                  "tier": "定价事实 · 最可信", "tier_level": "high",
+                  "headline": head,
+                  "detail": f"近月隐含波动 ±{em_pct*100:.0f}% · 较远月基准 {prem:+.1f}%",
+                  "value": f"±{em_pct*100:.0f}%"})
+
+    # A 磁吸位 —— 倾向
+    mlist = [float(x) for x in (magnets or [])]
+    mstr = "、".join(f"${x:.0f}" for x in mlist[:3])
+    items.append({"key": "magnet", "title": "磁吸位",
+                  "tier": "倾向 · 只在临近到期明显", "tier_level": "mid",
+                  "headline": f"到 {_exp_cn(exp)},${float(mp):.0f} 堆了最多筹码,临近到期股价容易被吸过去。" if mp else "暂无明显磁吸位。",
+                  "detail": f"押注最重的价位:{mstr}",
+                  "value": f"${float(mp):.0f}" if mp else "—"})
+
+    # C 波动状态 GEX —— 估算（最不可信，标签务必显眼）
+    if regime == "suppress":
+        ghead = "当前结构倾向于压制波动,股价可能小幅黏着、大涨大跌的概率被结构性压低。"
+    else:
+        ghead = "当前结构倾向于放大波动,一旦动起来、利好利空都可能被放大。"
+    items.append({"key": "gex", "title": "波动状态 · GEX",
+                  "tier": "估算 · 基于「做市商空 gamma」假设,谨慎看", "tier_level": "low",
+                  "headline": ghead,
+                  "detail": "GEX 的正负取决于做市商持仓假设,不是观测到的事实——它可能是错的。",
+                  "value": "压制波动" if regime == "suppress" else "放大波动"})
+
+    return {"symbol": symbol, "available": True, "expiry": str(exp), "spot": spot,
+            "dte": int(dte), "items": items,
+            "sub": "按可信度从高到低排：事件预期是市场定价的事实,GEX 只是基于假设的估算。"}
+
+
 def _nice_step(raw: float) -> float:
     """把原始步长收敛到一个好看的整数档（1/2/2.5/5/10/25/50/100/...）。"""
     for s in [1, 2, 2.5, 5, 10, 25, 50, 100, 250, 500, 1000, 2500]:

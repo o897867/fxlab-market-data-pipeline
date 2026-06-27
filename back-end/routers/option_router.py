@@ -47,3 +47,9 @@ async def probability(symbol: str = Query(...), price: float = Query(...),
 async def distribution(symbol: str = Query(...), expiry: str | None = None):
     """面板③押注分布：各价位 OI 墙 + max_pain + 看跌看涨比。"""
     return _guard(panels.distribution, symbol, expiry)
+
+
+@router.get("/impact")
+async def impact(symbol: str = Query(...), expiry: str | None = None):
+    """面板④影响：期权怎么影响正股（事件预期/磁吸位/GEX，带可信度标签）。"""
+    return _guard(panels.impact, symbol, expiry)
