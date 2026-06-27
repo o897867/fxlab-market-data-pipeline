@@ -14,6 +14,7 @@ source venv/bin/activate 2>/dev/null || source .venv/bin/activate 2>/dev/null
 {
   echo "═════ $(date -u +'%Y-%m-%d %H:%M:%S UTC') OptionLens refresh ═════"
   python -m option.extract 2>&1
+  python -m option.earnings 2>&1   # 下次财报日缓存（事件预期用）
   cd "$ROOT/analytics/dbt" || exit 1
   export DBT_DUCKDB_PATH="$ROOT/analytics/dbt/eventstudy.duckdb"
   dbt run --select stg_options_quotes stg_options_contracts stg_options_underlying \

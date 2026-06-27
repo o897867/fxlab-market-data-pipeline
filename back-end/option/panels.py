@@ -239,15 +239,26 @@ def impact(symbol: str, expiry: str | None = None) -> dict:
     name = _sym_short(symbol)
     em_pct = float(fiv) * math.sqrt(max(int(dte), 1) / 365) if fiv else 0
 
+    # 财报日（来自 earnings.json 缓存）；所选到期是否覆盖它
+    from option import earnings as _earn
+    ed = (_earn.load().get(symbol) or {}).get("date")
+    covers = bool(ed and ed <= str(exp))
+    ed_cn = (ed[5:].replace("-", "/")) if ed else None
+
     items = []
     # B 事件预期 —— 最可信（定价事实）
-    if ev:
-        head = f"近月期权定价了 ±{em_pct*100:.0f}% 的波动,明显高于之后到期 → 市场把近期当大事(常是财报)。"
+    if covers:
+        head = (f"📅 财报就在 {ed_cn},这个到期日覆盖它 —— 近月期权定价的 ±{em_pct*100:.0f}% "
+                f"波动很可能就是为财报。")
+    elif ev:
+        head = (f"近月期权定价了 ±{em_pct*100:.0f}% 的波动,明显高于之后到期 → 市场把近期当大事。"
+                + (f"(下次财报 {ed_cn},在所选到期之后)" if ed else ""))
     else:
-        head = f"近月与之后到期的期权定价的波动差不多({prem:+.0f}%),市场没在为近期某个特定事件额外定价。"
+        head = (f"近月与之后到期的期权定价的波动差不多({prem:+.0f}%),没在为近期特定事件额外定价。"
+                + (f"下次财报 {ed_cn}。" if ed else ""))
     items.append({"key": "event", "title": "事件预期",
                   "tier": "定价事实 · 最可信", "tier_level": "high",
-                  "headline": head,
+                  "headline": head, "earnings_date": ed, "earnings_in_window": covers,
                   "detail": f"近月隐含波动 ±{em_pct*100:.0f}% · 较远月基准 {prem:+.1f}%",
                   "value": f"±{em_pct*100:.0f}%"})
 
