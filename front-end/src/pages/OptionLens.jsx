@@ -112,6 +112,8 @@ const OptionLens = () => {
         </div>
 
         <div className="wrap">
+          <div className="ol-cols">
+          <div className="ol-col">
           {/* ① 预期范围 */}
           <section className="card">
             <p className="card__eyebrow"><span className="n">01</span><span>预期范围 · EXPECTED RANGE</span><span className="rule" /></p>
@@ -166,6 +168,8 @@ const OptionLens = () => {
             })()}
           </section>
 
+          </div>
+          <div className="ol-col">
           {/* ③ 押注分布 */}
           <section className="card">
             <p className="card__eyebrow"><span className="n">03</span><span>押注分布 · WHERE THE MONEY IS</span><span className="rule" /></p>
@@ -212,6 +216,8 @@ const OptionLens = () => {
             ) : <div className="ol-empty">{dist ? '该标的暂无快照数据' : '加载中…'}</div>}
           </section>
 
+          </div>
+          </div>
           <p className="ol-foot">期权透镜 · 市场信号翻译,仅供参考,不构成投资建议</p>
         </div>
       </div>

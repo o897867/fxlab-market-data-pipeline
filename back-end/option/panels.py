@@ -131,30 +131,62 @@ def distribution(symbol: str, expiry: str | None = None, top: int = 10) -> dict:
     try:
         exp = _pick_expiry(con, "mart_strike_distribution", symbol, expiry)
         rows = con.execute(
-            "SELECT strike, call_oi, put_oi, total_oi, is_wall, max_pain_strike, pc_ratio, spot "
+            "SELECT strike, call_oi, put_oi, max_pain_strike, pc_ratio, spot "
             "FROM main_marts.mart_strike_distribution WHERE underlying_code=? AND expiration=? "
-            "ORDER BY total_oi DESC", [symbol, exp]).fetchall()
+            "ORDER BY strike", [symbol, exp]).fetchall()
+        emrow = con.execute(
+            "SELECT pct FROM main_marts.mart_expected_move WHERE underlying_code=? AND expiration=?",
+            [symbol, exp]).fetchone()
     finally:
         con.close()
     if not rows:
         return {"symbol": symbol, "available": False}
-    strikes = [{"strike": float(r[0]), "call_oi": int(r[1]), "put_oi": int(r[2]),
-                "total_oi": int(r[3]), "is_wall": bool(r[4]),
-                "side": "call" if r[1] >= r[2] else "put"} for r in rows]
-    max_pain = float(rows[0][5]) if rows[0][5] is not None else None
-    pc_ratio = float(rows[0][6]) if rows[0][6] is not None else None
-    # 文案：最大的看涨墙 + 最大的两个看跌墙
-    call_walls = [s for s in strikes if s["side"] == "call"][:1]
-    put_walls = [s for s in strikes if s["side"] == "put"][:2]
+    spot = float(rows[0][5])
+    max_pain = float(rows[0][3]) if rows[0][3] is not None else None
+    pc_ratio = float(rows[0][4]) if rows[0][4] is not None else None
+    pct = float(emrow[0]) if emrow and emrow[0] else 0.10
+
+    # 价格网格：绕现价、按预期波动范围(±1.4σ)缩放，整数步长 → 均匀阶梯，无跳格。
+    half = max(pct * 1.4, 0.05) * spot
+    lo, hi = spot - half, spot + half
+    step = _nice_step(2 * half / top)
+    center = round(spot / step) * step
+    grid = [center + i * step for i in range(-top, top + 1) if lo - step / 2 <= center + i * step <= hi + step / 2 and center + i * step > 0]
+
+    buckets = []
+    for g in grid:
+        c = sum(int(r[1] or 0) for r in rows if abs(float(r[0]) - g) <= step / 2)
+        p = sum(int(r[2] or 0) for r in rows if abs(float(r[0]) - g) <= step / 2)
+        if c + p > 0:
+            buckets.append({"strike": float(g), "call_oi": c, "put_oi": p,
+                            "total_oi": c + p, "side": "call" if c >= p else "put"})
+    if not buckets:
+        return {"symbol": symbol, "available": False}
+    # 墙 = 网格内 OI 最大的前 4 个
+    wall_keys = {b["strike"] for b in sorted(buckets, key=lambda b: b["total_oi"], reverse=True)[:4]}
+    for b in buckets:
+        b["is_wall"] = b["strike"] in wall_keys
+    ladder = sorted(buckets, key=lambda b: b["strike"], reverse=True)
+
     name = _sym_short(symbol)
+    call_walls = sorted([b for b in buckets if b["side"] == "call" and b["is_wall"]],
+                        key=lambda b: b["call_oi"], reverse=True)[:1]
+    put_walls = sorted([b for b in buckets if b["side"] == "put" and b["is_wall"]],
+                       key=lambda b: b["put_oi"], reverse=True)[:2]
     ca = f"${call_walls[0]['strike']:.0f} 挤满赌涨" if call_walls else ""
-    pa = "、".join(f"${s['strike']:.0f}" for s in put_walls)
+    pa = "、".join(f"${b['strike']:.0f}" for b in put_walls)
     headline = f"{name} 押得最多的:{ca}" + (f",{pa} 堆着买保护" if pa else "")
-    # 梯子展示：取 OI 最大的 top 个价位，再按价格降序排（高价在上，符合设计阶梯）
-    ladder = sorted(strikes[:top], key=lambda s: s["strike"], reverse=True)
     return {
         "symbol": symbol, "available": True, "expiry": str(exp), "headline": headline,
-        "spot": float(rows[0][7]),
+        "spot": spot, "step": step,
         "strikes": ladder, "max_pain": max_pain, "pc_ratio": round(pc_ratio, 3) if pc_ratio else None,
         "sub": "未平仓量截至昨收;磁吸位（max pain）是临近到期股价容易被拉向的价位",
     }
+
+
+def _nice_step(raw: float) -> float:
+    """把原始步长收敛到一个好看的整数档（1/2/2.5/5/10/25/50/100/...）。"""
+    for s in [1, 2, 2.5, 5, 10, 25, 50, 100, 250, 500, 1000, 2500]:
+        if s >= raw * 0.85:
+            return s
+    return 5000
