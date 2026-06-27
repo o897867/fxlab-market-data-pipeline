@@ -36,7 +36,7 @@ function BandChart({ spot, low, high }) {
   const yOf = p => lo - ((p - low) / (high - low)) * (lo - hi);
   const sy = yOf(spot);
   return (
-    <svg className="band-svg" viewBox="0 0 340 188" preserveAspectRatio="none">
+    <svg className="band-svg" viewBox="0 0 340 188" preserveAspectRatio="xMidYMid meet">
       <line className="band-vline" x1={x0} y1="14" x2={x0} y2="172" />
       <polygon className="band-area" points={`${x0},${sy} ${x1},${hi} ${x1},${lo}`} />
       <line className="band-edge" x1={x0} y1={sy} x2={x1} y2={hi} />

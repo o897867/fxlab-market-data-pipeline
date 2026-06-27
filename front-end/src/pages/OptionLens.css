@@ -54,7 +54,7 @@
 .olp .lead .dim { color: var(--ol-3); }
 
 /* band chart */
-.olp .band-svg { width: 100%; height: 188px; display: block; }
+.olp .band-svg { width: 100%; height: auto; max-height: 230px; display: block; }
 .olp .band-area { fill: var(--ol-ink); opacity: 0.06; }
 .olp .band-edge { fill: none; stroke: var(--ol-ink); stroke-width: 1; stroke-dasharray: 4 3; opacity: 0.45; }
 .olp .band-mid { fill: none; stroke: var(--ol-ink); stroke-width: 1; stroke-dasharray: 2 4; opacity: 0.25; }
