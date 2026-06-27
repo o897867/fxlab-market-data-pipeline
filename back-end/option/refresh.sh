@@ -17,6 +17,7 @@ source venv/bin/activate 2>/dev/null || source .venv/bin/activate 2>/dev/null
   cd "$ROOT/analytics/dbt" || exit 1
   export DBT_DUCKDB_PATH="$ROOT/analytics/dbt/eventstudy.duckdb"
   dbt run --select stg_options_quotes stg_options_contracts stg_options_underlying \
-      int_option_chain mart_expected_move mart_probability_curve mart_strike_distribution 2>&1
+      int_option_chain fct_iv_snapshot fct_oi_snapshot \
+      mart_expected_move mart_probability_curve mart_strike_distribution 2>&1
   echo "done $(date -u +'%H:%M:%S')"
 } >> "$LOG" 2>&1

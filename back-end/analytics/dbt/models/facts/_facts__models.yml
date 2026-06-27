@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: fct_iv_snapshot
+    description: "append-only IV 快照：每交易日×标的×到期日的 ATM IV。喂 IV Rank / IV crush。"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [underlying_code, snapshot_date, expiration]
+      # freshness/断档告警：最新快照日不应早于 4 天前（覆盖周末）
+      - dbt_utils.recency:
+          datepart: day
+          field: snapshot_date
+          interval: 4
+    columns:
+      - name: snapshot_date
+        data_tests: [not_null]
+      - name: atm_iv
+        data_tests:
+          # 放宽到 1000%：极高波动票的近月 ATM IV 可达数百%（已排除 0DTE）
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 10, inclusive: false}
+      - name: dte
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: true}
+
+  - name: fct_oi_snapshot
+    description: "append-only OI 快照：每交易日×标的×到期日×行权价的 call/put OI。喂墙的演变。"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [underlying_code, snapshot_date, expiration, strike]
+    columns:
+      - name: call_oi
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: true}
+      - name: put_oi
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: true}

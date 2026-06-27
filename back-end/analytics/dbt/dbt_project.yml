@@ -23,6 +23,9 @@ models:
     intermediate:
       +materialized: view
       +schema: intermediate
+    facts:
+      +materialized: table
+      +schema: facts
     marts:
       +materialized: table
       +schema: marts
