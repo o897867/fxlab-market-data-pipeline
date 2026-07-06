@@ -4,13 +4,28 @@ import './OptionLens.css';
 
 const API = import.meta.env.VITE_API_URL || '';
 
-// v1 锁定标的 + 中文名（doc：先锁流动性好的）
+// 核心层 watchlist + 中文名（与后端 config.DEFAULT_SYMBOLS 对齐，18 只）
 const SYMS = [
+  { code: 'NASDAQ:NVDA', short: 'NVDA', cn: '英伟达' },
+  { code: 'NASDAQ:AMD', short: 'AMD', cn: '超微' },
+  { code: 'NASDAQ:TSLA', short: 'TSLA', cn: '特斯拉' },
+  { code: 'NASDAQ:AAPL', short: 'AAPL', cn: '苹果' },
+  { code: 'NASDAQ:META', short: 'META', cn: 'Meta' },
+  { code: 'NASDAQ:MSFT', short: 'MSFT', cn: '微软' },
+  { code: 'NASDAQ:AMZN', short: 'AMZN', cn: '亚马逊' },
+  { code: 'NASDAQ:AVGO', short: 'AVGO', cn: '博通' },
+  { code: 'NASDAQ:GOOG', short: 'GOOG', cn: '谷歌' },
   { code: 'NASDAQ:MU', short: 'MU', cn: '美光' },
   { code: 'AMEX:SPY', short: 'SPY', cn: '标普500' },
+  { code: 'NASDAQ:QQQ', short: 'QQQ', cn: '纳指100' },
+  { code: 'AMEX:IWM', short: 'IWM', cn: '罗素2000' },
+  { code: 'NASDAQ:COIN', short: 'COIN', cn: 'Coinbase' },
+  { code: 'NASDAQ:PLTR', short: 'PLTR', cn: 'Palantir' },
+  { code: 'NASDAQ:SMCI', short: 'SMCI', cn: '超微电脑' },
+  { code: 'NASDAQ:NFLX', short: 'NFLX', cn: '奈飞' },
   { code: 'NYSE:ORCL', short: 'ORCL', cn: '甲骨文' },
-  { code: 'NASDAQ:GOOG', short: 'GOOG', cn: '谷歌' },
 ];
+const SYM_BY_CODE = Object.fromEntries(SYMS.map(s => [s.code, s]));
 
 function useFetch(url) {
   const [data, setData] = useState(null);
@@ -111,11 +126,73 @@ function ImpactPanel({ imp }) {
   );
 }
 
+/* ── watchlist 概览榜单：消费 /daily-report，临近财报置顶、其余按 IV Rank 降序 ── */
+const PC_ARROW = { rising: ['↑', '防守升温'], falling: ['↓', '防守降温'], flat: ['→', '大体平稳'] };
+
+function tension(c) {
+  // 紧张度 = IV Rank 位置。数据未成熟(<30天)时不给结论，显示"积累中"。
+  if (c.iv_maturing || c.iv_rank == null) return ['积累中', 'mature'];
+  if (c.iv_rank >= 80) return ['偏贵', 'hot'];
+  if (c.iv_rank >= 50) return ['中等', 'mid'];
+  return ['偏便宜', 'calm'];
+}
+
+function WatchBoard({ report, onPick }) {
+  if (!report) return <div className="ol-empty">加载中…</div>;
+  if (!report.cards) return <div className="ol-empty">暂无数据（先跑快照 + dbt run）</div>;
+  return (
+    <div className="wb-wrap">
+      <div className="wb-head">
+        <h1 className="wb-title">期权体检 · 全市场一览</h1>
+        <p className="wb-sub">{report.count} 只标的 · 数据 {report.as_of} · 有临近财报的置顶，其余按期权贵贱排序</p>
+      </div>
+      <div className="wb-grid">
+        {report.cards.map(c => {
+          const [tLabel, tLv] = tension(c);
+          const [arrow, pcTxt] = PC_ARROW[c.pc_trend] || ['', ''];
+          return (
+            <button key={c.symbol} className="wb-card" onClick={() => onPick(c.symbol)}>
+              <div className="wb-card__top">
+                <div className="wb-tick">
+                  <span className="wb-tick__sym">{c.name}</span>
+                  <span className="wb-tick__cn">{(SYM_BY_CODE[c.symbol] || {}).cn || ''}</span>
+                </div>
+                {c.earnings_soon && <span className="wb-earn">{c.days_to_earnings}天后财报</span>}
+              </div>
+              <div className="wb-tension">
+                <span className={`wb-dot lv-${tLv}`} />
+                <span className="wb-tension__lab">紧张度 {tLabel}</span>
+                {c.iv_rank != null && !c.iv_maturing && <span className="wb-tension__rank">IV Rank {Math.round(c.iv_rank)}</span>}
+                {c.iv_maturing && <span className="wb-tension__rank dim">{c.data_days}天</span>}
+              </div>
+              <div className="wb-metrics">
+                <div className="wb-m">
+                  <span className="wb-m__k">本期波动</span>
+                  <span className="wb-m__v mono">{c.em_pct != null ? `±${c.em_pct}%` : '—'}</span>
+                  <span className="wb-m__x mono">{c.band_low != null ? `$${Math.round(c.band_low)}–$${Math.round(c.band_high)}` : ''}</span>
+                </div>
+                <div className="wb-m">
+                  <span className="wb-m__k">情绪 P/C</span>
+                  <span className="wb-m__v mono">{c.pc_today != null ? c.pc_today : '—'} <span className={`wb-arrow ${c.pc_trend}`}>{arrow}</span></span>
+                  <span className="wb-m__x">{pcTxt}</span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <p className="wb-foot">{report.disclaimer || '以上为期权市场当前定价的客观统计，不预测走势、不构成投资建议。'}</p>
+    </div>
+  );
+}
+
 const OptionLens = () => {
+  const [view, setView] = useState('board');      // board 榜单首页 | detail 单票详情
   const [sym, setSym] = useState(SYMS[0]);
   const [tab, setTab] = useState('overview');
-  const em = useFetch(`/api/option/expected-move?symbol=${sym.code}`);
-  const dist = useFetch(`/api/option/distribution?symbol=${sym.code}`);
+  const board = useFetch(view === 'board' ? '/api/option/daily-report' : null);
+  const em = useFetch(view === 'detail' ? `/api/option/expected-move?symbol=${sym.code}` : null);
+  const dist = useFetch(view === 'detail' ? `/api/option/distribution?symbol=${sym.code}` : null);
   const imp = useFetch(tab === 'impact' ? `/api/option/impact?symbol=${sym.code}` : null);
   const ts = useFetch(tab === 'term' ? `/api/option/term-structure?symbol=${sym.code}` : null);
 
@@ -143,6 +220,11 @@ const OptionLens = () => {
 
   const [menu, setMenu] = useState(false);
 
+  const pick = code => {
+    setSym(SYM_BY_CODE[code] || { code, short: code.split(':').pop(), cn: '' });
+    setView('detail'); setTab('overview'); setProb(null); setTarget(''); setSel(null);
+  };
+
   const maxOI = dist && dist.available
     ? Math.max(1, ...dist.strikes.flatMap(s => [s.call_oi, s.put_oi])) : 1;
 
@@ -152,23 +234,28 @@ const OptionLens = () => {
       <div className="olp">
         <div className="ol-bar">
           <div className="ol-brand">期权<span className="lt">透镜</span></div>
-          <div className="ol-tickwrap">
-            <button className="ol-ticker" onClick={() => setMenu(m => !m)}>
-              {sym.short} <span className="cn">{sym.cn}</span> <span className="car">▾</span>
-            </button>
-            {menu && (
-              <div className="ol-menu">
-                {SYMS.map(s => (
-                  <button key={s.code} className={`ol-menu__item${s.code === sym.code ? ' on' : ''}`}
-                    onClick={() => { setSym(s); setMenu(false); setProb(null); setTarget(''); setSel(null); }}>
-                    {s.short} <span className="cn">{s.cn}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {view === 'detail' && (
+            <div className="ol-tickwrap">
+              <button className="ol-back" onClick={() => setView('board')}>← 榜单</button>
+              <button className="ol-ticker" onClick={() => setMenu(m => !m)}>
+                {sym.short} <span className="cn">{sym.cn}</span> <span className="car">▾</span>
+              </button>
+              {menu && (
+                <div className="ol-menu">
+                  {SYMS.map(s => (
+                    <button key={s.code} className={`ol-menu__item${s.code === sym.code ? ' on' : ''}`}
+                      onClick={() => { setSym(s); setMenu(false); setProb(null); setTarget(''); setSel(null); }}>
+                      {s.short} <span className="cn">{s.cn}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
+        {view === 'board' ? <WatchBoard report={board} onPick={pick} /> : (
+        <>
         <div className="ol-tabs">
           {[['overview', '总览'], ['impact', '影响'], ['term', '期限']].map(([k, label]) => (
             <button key={k} className={`ol-tab${tab === k ? ' on' : ''}`} onClick={() => setTab(k)}>{label}</button>
@@ -286,6 +373,8 @@ const OptionLens = () => {
           )}
           <p className="ol-foot">期权透镜 · 市场信号翻译,仅供参考,不构成投资建议</p>
         </div>
+        </>
+        )}
       </div>
     </>
   );
