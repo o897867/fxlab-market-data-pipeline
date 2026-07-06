@@ -23,9 +23,19 @@ SNAPSHOT_DIR = os.getenv(
 # 现价 ±range% 的行权价（保证分布面板两侧虚值墙都拿得到）
 DEFAULT_RANGE_PCT = int(os.getenv("OPTION_RANGE_PCT", "20"))
 
-# v1 先锁流动性好的标的（doc：MU/SPY 这类）
+# 核心层 watchlist：高期权流动性 + 有财报热度。全部经 InsightSentry get_quotes 验过代码。
+# ⚠️ 这是 IV 历史积累的不可逆时钟——今天不入选的票，将来加入要从零等 ~1 个月攒 fct_iv_snapshot。
+# 科技核心(10) + ETF(3) + 高波动(4) + 保留(1) = 18。
 DEFAULT_SYMBOLS = os.getenv(
-    "OPTION_SYMBOLS", "NASDAQ:MU,AMEX:SPY,NYSE:ORCL,NASDAQ:GOOG").split(",")
+    "OPTION_SYMBOLS",
+    "NASDAQ:NVDA,NASDAQ:AMD,NASDAQ:TSLA,NASDAQ:AAPL,NASDAQ:META,"
+    "NASDAQ:MSFT,NASDAQ:AMZN,NASDAQ:AVGO,NASDAQ:GOOG,NASDAQ:MU,"
+    "AMEX:SPY,NASDAQ:QQQ,AMEX:IWM,"
+    "NASDAQ:COIN,NASDAQ:PLTR,NASDAQ:SMCI,NASDAQ:NFLX,"
+    "NYSE:ORCL").split(",")
+
+# 每只票抽取之间的礼貌间隔（秒），防 InsightSentry rate limit。18 只 × 3 端点需节流。
+EXTRACT_SLEEP_SEC = float(os.getenv("OPTION_EXTRACT_SLEEP", "1.5"))
 
 # dbt-duckdb 产物库（mart_* 在 main_marts schema）。服务层只读它出三面板。
 DUCKDB_PATH = os.getenv(

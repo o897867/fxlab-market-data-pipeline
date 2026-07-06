@@ -139,13 +139,17 @@ def main(argv=None):
     exp_to = args.exp_to or (today + timedelta(days=45)).isoformat()
     symbols = args.symbols or config.DEFAULT_SYMBOLS
 
-    logger.info("快照窗口 到期 %s → %s, range ±%d%%", exp_from, exp_to, args.range)
-    for code in symbols:
+    logger.info("快照窗口 到期 %s → %s, range ±%d%%, %d 只标的", exp_from, exp_to, args.range, len(symbols))
+    for i, code in enumerate(symbols):
         try:
             summ = snapshot(code.strip(), exp_from, exp_to, args.range)
             _verify(summ)
         except Exception as e:  # noqa: BLE001
+            # 单只失败不阻塞整个 watchlist——继续攒其余票的历史。
             logger.error("%s 快照失败: %r", code, e)
+        # 票间节流防 rate limit（末票后不必再睡）。
+        if i < len(symbols) - 1:
+            time.sleep(config.EXTRACT_SLEEP_SEC)
 
 
 if __name__ == "__main__":
