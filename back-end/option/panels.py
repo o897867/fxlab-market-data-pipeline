@@ -301,9 +301,24 @@ def _nice_step(raw: float) -> float:
 IV_RANK_MIN_DAYS = 30
 
 
+def _valuation(iv_current: float | None, hv20: float | None):
+    """贵贱判断——今天就能出，用 IV vs 已实现波动(HV20)当尺子，不必等 IV 历史。
+    返回 (级别文案, 级别码 hot/mid/calm, 比值) 或 None（缺数据）。纯事实对比，不预测。"""
+    if not iv_current or not hv20 or hv20 <= 0:
+        return None
+    ratio = iv_current / hv20
+    if ratio >= 1.20:
+        return "偏贵", "hot", ratio
+    if ratio <= 0.85:
+        return "偏便宜", "calm", ratio
+    return "中性", "mid", ratio
+
+
 def iv_rank(symbol: str) -> dict:
-    """现在期权比过去(最多一年)贵还是便宜。翻译别越界——用户不做期权，
-    只翻成"对持有正股的你意味着什么"（doc §4.3）。"""
+    """期权现在贵不贵。两把尺子：
+    ① vs 已实现波动(HV) —— 今天就能出（冷启动期的主判断）
+    ② vs 自己过去一年(IV Rank) —— 需攒够快照，未满 30 天标注"积累中"
+    翻译别越界：只陈述"市场当前如何定价 vs 这票实际走过的波动"，不预测、不给建议。"""
     con = _con()
     try:
         row = con.execute(
@@ -314,37 +329,52 @@ def iv_rank(symbol: str) -> dict:
     if not row:
         return {"symbol": symbol, "available": False}
     iv_now, lo, hi, rank, pct, days, as_of = row
+    iv_now = float(iv_now)
     name = _sym_short(symbol)
     maturing = days is None or days < IV_RANK_MIN_DAYS
 
-    # 翻译铁律：只陈述"市场当前如何定价"的事实，不预测未来、不给建议。
-    # 冷启动一致性：未满 30 天（maturing）或高低相等（rank=None）时统一给"积累中"，
-    # 不让 headline 说"偏贵"而 caption 又说"先别下结论"自相矛盾。
-    if rank is None or maturing:
-        level = "数据积累中"
-        desc = f"目前只攒了 {days} 天快照,IV Rank 还没有可靠的参照系,先不下贵贱结论。"
-    elif rank >= 80:
-        level = "偏贵"
-        desc = (f"现在期权处于过去一年区间的高位(IV Rank {rank:.0f}/100),"
-                f"说明市场当前为波动定的价比平时高得多。")
-    elif rank >= 50:
-        level = "中等"
-        desc = f"期权价格处于过去区间的中段({rank:.0f}/100),不算贵也不算便宜。"
-    else:
-        level = "偏便宜"
-        desc = f"现在期权比过去便宜(处于过去区间后 {rank:.0f}%),市场当前定价相对平静。"
+    # ① HV 参照（今天可判）
+    from option import realized_vol as _rv
+    hv = (_rv.load().get(symbol) or {})
+    hv20 = hv.get("hv20")
+    hv252 = hv.get("hv252")
+    val = _valuation(iv_now, hv20)
 
-    headline = f"{name}:{level}" + (f"(IV Rank {rank:.0f})" if rank is not None and not maturing else "")
+    if val:
+        level, level_code, ratio = val
+        gap = abs(ratio - 1) * 100
+        if level == "偏贵":
+            vdesc = (f"期权现在定价的年化波动约 ±{iv_now*100:.0f}%,比这票最近实际走的波动 "
+                     f"(±{hv20*100:.0f}%) 高出约 {gap:.0f}% —— 相对偏贵。")
+        elif level == "偏便宜":
+            vdesc = (f"期权现在定价的年化波动约 ±{iv_now*100:.0f}%,低于这票最近实际走的波动 "
+                     f"(±{hv20*100:.0f}%) 约 {gap:.0f}% —— 相对偏便宜。")
+        else:
+            vdesc = (f"期权定价的波动(±{iv_now*100:.0f}%)和这票最近实际走的波动"
+                     f"(±{hv20*100:.0f}%)差不多 —— 定价不算贵也不算便宜。")
+    else:
+        level, level_code, vdesc = "暂无参照", "mature", "还拿不到这票的历史价格,暂时给不出贵贱参照。"
+
+    headline = f"{name}:{level}"
+
+    # ② IV Rank（积累中）—— 作为次要参照
+    if rank is None or maturing:
+        rank_note = f"另一把尺子「IV Rank」还在积累({days} 天),满 30 天后能看'比它自己过去一年贵还是便宜'。"
+    else:
+        rank_note = f"IV Rank {rank:.0f}/100 —— 当前 IV 在这票过去一年区间里的位置。"
+
     return {
         "symbol": symbol, "available": True, "as_of": str(as_of),
-        "level": level, "headline": headline, "description": desc,
-        "iv_current": round(float(iv_now), 4),
+        "level": level, "level_code": level_code, "headline": headline, "description": vdesc,
+        "iv_current": round(iv_now, 4),
+        "hv20": round(float(hv20), 4) if hv20 else None,
+        "hv252": round(float(hv252), 4) if hv252 else None,
+        "iv_vs_hv": round(val[2], 3) if val else None,
         "iv_rank": round(float(rank), 1) if rank is not None else None,
         "iv_percentile": round(float(pct), 1) if pct is not None else None,
         "iv_low": round(float(lo), 4), "iv_high": round(float(hi), 4),
-        "data_days": int(days), "maturing": maturing,
-        "sub": ("数据积累中,参考价值有限——满 30 天后更可信。"
-                if maturing else "IV Rank = 当前隐含波动率在过去一年高低区间里的位置。"),
+        "data_days": int(days), "maturing": maturing, "rank_note": rank_note,
+        "sub": "贵贱用 IV vs 已实现波动(HV)判——市场为未来定的价 vs 这票过去实际走的,是事实对比不是预言。",
     }
 
 
@@ -396,7 +426,9 @@ def daily_report() -> dict:
     排序：有财报的置顶，其余按 IV Rank 降序（最"紧张"的在前）。首页用。"""
     symbols = config.DEFAULT_SYMBOLS
     from option import earnings as _earn
+    from option import realized_vol as _rv
     earn = _earn.load()
+    hvmap = _rv.load()
 
     con = _con()
     try:
@@ -422,9 +454,16 @@ def daily_report() -> dict:
     for code in symbols:
         name = _sym_short(code)
         ir = ivr.get(code)
+        iv_now = float(ir[1]) if ir and ir[1] is not None else None
         rank = round(float(ir[2]), 1) if ir and ir[2] is not None else None
         days = int(ir[3]) if ir else 0
         maturing = ir is None or ir[3] is None or ir[3] < IV_RANK_MIN_DAYS
+
+        # 贵贱：今天就能出（IV vs HV20），不必等 IV Rank 成熟
+        hv20 = (hvmap.get(code) or {}).get("hv20")
+        val = _valuation(iv_now, hv20)          # (级别, 码, 比值) 或 None
+        valuation = val[0] if val else None
+        valuation_code = val[1] if val else None
 
         em = em_by_sym.get(code, {})
         exp = _pick_expiry_py(sorted(em.keys())) if em else None
@@ -438,6 +477,8 @@ def daily_report() -> dict:
 
         cards.append({
             "symbol": code, "name": name,
+            "valuation": valuation, "valuation_code": valuation_code,
+            "iv_vs_hv": round(val[2], 3) if val else None,
             "iv_rank": rank, "iv_maturing": maturing, "data_days": days,
             "spot": round(float(band[3]), 2) if band else None,
             "band_low": round(float(band[0]), 2) if band else None,
@@ -449,11 +490,11 @@ def daily_report() -> dict:
             "earnings_soon": earnings_soon,
         })
 
-    # 排序：临近财报(≤14天)置顶（按天数近→远）；其余按 IV Rank 降序，null 垫底
+    # 排序：临近财报(≤14天)置顶；其余按"贵"程度(IV/HV 比值)降序，无参照垫底
     cards.sort(key=lambda c: (
         not c["earnings_soon"],
         c["days_to_earnings"] if c["earnings_soon"] else 0,
-        -(c["iv_rank"] if c["iv_rank"] is not None else -1),
+        -(c["iv_vs_hv"] if c["iv_vs_hv"] is not None else -1),
     ))
     return {"as_of": str(today), "count": len(cards), "cards": cards,
             "disclaimer": "以上为期权市场当前定价的客观统计,不预测走势、不构成投资建议。"}

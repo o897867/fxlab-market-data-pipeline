@@ -109,8 +109,10 @@ const PC_ICON = { rising: '↑', falling: '↓', flat: '→' };
 function SeriesPanel({ ivr, pcr }) {
   if (!ivr) return <div className="ol-empty">加载中…</div>;
   if (!ivr.available) return <div className="ol-empty">该标的暂无快照数据</div>;
-  const rank = ivr.iv_rank;
-  const dotLv = ivr.maturing ? 'mature' : rank >= 80 ? 'hot' : rank >= 50 ? 'mid' : 'calm';
+  const lv = ivr.level_code || 'mature';
+  const iv = ivr.iv_current, hv = ivr.hv20;
+  const cmpMax = iv != null && hv != null ? Math.max(iv, hv) : null;
+  const pctW = v => cmpMax ? `${Math.max(3, v / cmpMax * 100)}%` : '0%';
   return (
     <section className="card imp-card">
       <p className="card__eyebrow"><span className="n">06</span><span>时序 · 贵贱与情绪 · OVER TIME</span><span className="rule" /></p>
@@ -118,17 +120,24 @@ function SeriesPanel({ ivr, pcr }) {
       <div className="sr-block">
         <div className="sr-top">
           <span className="sr-title">现在期权贵不贵</span>
-          <span className="sr-lv"><span className={`wb-dot lv-${dotLv}`} />{ivr.level}</span>
+          <span className="sr-lv"><span className={`wb-dot lv-${lv}`} />{ivr.level}</span>
         </div>
         <p className="lead" style={{ fontSize: 17, margin: '4px 0 12px' }}>{ivr.description}</p>
-        {!ivr.maturing && rank != null ? (
-          <>
-            <div className="sr-gauge"><div className={`sr-gauge__fill lv-${dotLv}`} style={{ width: `${rank}%` }} /></div>
-            <div className="sr-gauge__ax"><span>便宜</span><span className="mono">IV Rank {Math.round(rank)}/100</span><span>贵</span></div>
-          </>
-        ) : (
-          <p className="caption">数据积累中（{ivr.data_days} 天）——满 30 天后 IV Rank 才有参照系，暂不给贵贱结论。</p>
+        {cmpMax && (
+          <div className="sr-cmp">
+            <div className="sr-cmp__row">
+              <span className="sr-cmp__k">期权定价 IV</span>
+              <div className="sr-bar"><div className={`sr-bar__fill lv-${lv}`} style={{ width: pctW(iv) }} /></div>
+              <span className="sr-cmp__v mono">±{Math.round(iv * 100)}%</span>
+            </div>
+            <div className="sr-cmp__row">
+              <span className="sr-cmp__k">实际波动 HV20</span>
+              <div className="sr-bar"><div className="sr-bar__fill neutral" style={{ width: pctW(hv) }} /></div>
+              <span className="sr-cmp__v mono">±{Math.round(hv * 100)}%</span>
+            </div>
+          </div>
         )}
+        <p className="caption">{ivr.rank_note}</p>
       </div>
 
       {pcr && pcr.available && (
@@ -141,7 +150,7 @@ function SeriesPanel({ ivr, pcr }) {
           <p className="caption">{pcr.sub}</p>
         </div>
       )}
-      <p className="caption" style={{ marginTop: 16, color: 'var(--ol-4)' }}>以上为期权市场当前定价的客观统计，不预测走势。</p>
+      <p className="caption" style={{ marginTop: 16, color: 'var(--ol-4)' }}>{ivr.sub}</p>
     </section>
   );
 }
@@ -173,11 +182,9 @@ function ImpactPanel({ imp }) {
 const PC_ARROW = { rising: ['↑', '防守升温'], falling: ['↓', '防守降温'], flat: ['→', '大体平稳'] };
 
 function tension(c) {
-  // 紧张度 = IV Rank 位置。数据未成熟(<30天)时不给结论，显示"积累中"。
-  if (c.iv_maturing || c.iv_rank == null) return ['积累中', 'mature'];
-  if (c.iv_rank >= 80) return ['偏贵', 'hot'];
-  if (c.iv_rank >= 50) return ['中等', 'mid'];
-  return ['偏便宜', 'calm'];
+  // 期权贵贱 = IV vs 已实现波动(HV)，今天就能判。无期权快照的票(还没 iv_current)才显示"积累中"。
+  if (c.valuation_code) return [c.valuation, c.valuation_code];
+  return ['数据积累中', 'mature'];
 }
 
 function WatchBoard({ report, onPick }) {
@@ -204,9 +211,8 @@ function WatchBoard({ report, onPick }) {
               </div>
               <div className="wb-tension">
                 <span className={`wb-dot lv-${tLv}`} />
-                <span className="wb-tension__lab">紧张度 {tLabel}</span>
-                {c.iv_rank != null && !c.iv_maturing && <span className="wb-tension__rank">IV Rank {Math.round(c.iv_rank)}</span>}
-                {c.iv_maturing && <span className="wb-tension__rank dim">{c.data_days}天</span>}
+                <span className="wb-tension__lab">期权贵贱 {tLabel}</span>
+                {c.iv_vs_hv != null && <span className="wb-tension__rank mono">IV/实际 {c.iv_vs_hv.toFixed(2)}×</span>}
               </div>
               <div className="wb-metrics">
                 <div className="wb-m">

@@ -14,7 +14,8 @@ source venv/bin/activate 2>/dev/null || source .venv/bin/activate 2>/dev/null
 {
   echo "═════ $(date -u +'%Y-%m-%d %H:%M:%S UTC') OptionLens refresh ═════"
   python -m option.extract 2>&1
-  python -m option.earnings 2>&1   # 下次财报日缓存（事件预期用）
+  python -m option.earnings 2>&1        # 下次财报日缓存（事件预期用）
+  python -m option.realized_vol 2>&1    # 已实现波动 HV 缓存（IV 冷启动期的贵贱参照）
   cd "$ROOT/analytics/dbt" || exit 1
   export DBT_DUCKDB_PATH="$ROOT/analytics/dbt/eventstudy.duckdb"
   # 全部期权 marts 一次重建：之前漏了 mart_impact / mart_term_structure，
