@@ -575,8 +575,7 @@ export default function Analytics({ onNavigate }) {
   const { currentLanguage } = useLanguage();
   const isChinese = currentLanguage === 'zh-CN';
 
-  const [tab, setTab] = useState('xau');
-  const [days, setDays] = useState(90);
+  // 数据分析仅保留「新闻情绪」分析；XAU/DXY/US2Y 已暂停（前端隐去，后端只跑 news）
 
   // Clock
   const [clock, setClock] = useState('');
@@ -592,7 +591,7 @@ export default function Analytics({ onNavigate }) {
 
   // Status
   const { data: status } = useFetch('/api/analytics/status');
-  const lastUpdate = status?.analyses?.xau_daily_stats?.last_modified;
+  const lastUpdate = status?.analyses?.news_sentiment?.last_modified;
 
   // Date formatting
   const now = new Date();
@@ -618,8 +617,8 @@ export default function Analytics({ onNavigate }) {
           </h1>
           <p className="an-mast__sub">
             {isChinese
-              ? '黄金、美元指数、2年期美债收益率的走势与波动率、交易时段表现与新闻情绪——用数据读懂市场。'
-              : 'Gold, the dollar index and 2-year Treasury yield \u2014 price trends, volatility, session performance and news sentiment, reading the market through data.'}
+              ? '金融新闻情绪分析——每日情绪走势、分类分布、情绪-价格相关性与热门标的，用数据读懂市场情绪。'
+              : 'Financial news sentiment analytics \u2014 daily sentiment trend, category distribution, sentiment-price correlation and top symbols.'}
           </p>
           <div className="an-mast__bar">
             <span className="an-mast__stamp">{dateStr}</span>
@@ -640,27 +639,14 @@ export default function Analytics({ onNavigate }) {
           </div>
         </section>
 
-        {/* ── Tab switcher ── */}
+        {/* ── 仅保留新闻情绪分析 ── */}
         <div className="an-tab-row">
-          <button className={`an-tab${tab === 'xau' ? ' active' : ''}`} onClick={() => setTab('xau')}>
-            {isChinese ? '黄金 · XAU' : 'XAU / Gold'}
-          </button>
-          <button className={`an-tab${tab === 'dxy' ? ' active' : ''}`} onClick={() => setTab('dxy')}>
-            {isChinese ? '美元 · DXY' : 'DXY / Dollar'}
-          </button>
-          <button className={`an-tab${tab === 'us2y' ? ' active' : ''}`} onClick={() => setTab('us2y')}>
-            {isChinese ? '2年期 · US2Y' : 'US2Y / Yield'}
-          </button>
-          <button className={`an-tab${tab === 'news' ? ' active' : ''}`} onClick={() => setTab('news')}>
+          <button className="an-tab active">
             {isChinese ? '新闻情绪 · Sentiment' : 'News sentiment'}
           </button>
         </div>
 
-        {/* ── Tab content ── */}
-        {tab === 'news'
-          ? <NewsTab isChinese={isChinese} />
-          : <InstrumentTab key={tab} inst={INSTS[tab]} isChinese={isChinese} days={days} setDays={setDays} />
-        }
+        <NewsTab isChinese={isChinese} />
 
         {/* ── Footer ── */}
         <footer className="an-footer">

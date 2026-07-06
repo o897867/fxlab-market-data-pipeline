@@ -48,7 +48,9 @@ eth_data_manager: BinanceDataManager = None
 eth_ws_clients: set = set()  # WebSocket clients for real-time updates
 
 # ============= XAU (Gold) Data 全局变量 =============
-XAU_DATA_ENABLED = True  # Enable XAU data fetching
+# XAUUSD 相关功能已从源头暂停（盘口放大镜、XAU 行情/指标/盘口报价均依赖此数据源）。
+# 关闭后所有 /api/xau/* 端点自动返回 503；MacroPulse（央行鹰鸽）轮询已移出本开关，继续运行。
+XAU_DATA_ENABLED = False  # Paused: XAUUSD data source disabled
 xau_data_manager: XAUDataManager = None
 xau_ws_clients: set = set()  # WebSocket clients for XAU updates
 
@@ -93,27 +95,35 @@ async def lifespan(app: FastAPI):
             except Exception as e:
                 logger.error(f"❌ ETH 数据服务初始化失败: {e}")
 
-        # Initialize XAU data manager
+        # InsightSentry Bearer Token（XAU 与 MacroPulse 轮询共用）
+        bearer_token = "eyJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoic3V5aW5nY2luQGdtYWlsLmNvbSIsInBsYW4iOiJ1bHRyYSIsIm5ld3NmZWVkX2VuYWJsZWQiOnRydWUsIndlYnNvY2tldF9zeW1ib2xzIjo1LCJ3ZWJzb2NrZXRfY29ubmVjdGlvbnMiOjF9.6aA_ND-9NmZI2-8mILRJeZDLt9Y6skrtsNbzP0FeQVI"
+
+        # Initialize XAU data manager（XAUUSD 已从源头暂停）
         if XAU_DATA_ENABLED:
             try:
                 logger.info("💰 初始化 XAU 数据服务 (InsightSentry)...")
-                # InsightSentry Bearer Token
-                bearer_token = "eyJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoic3V5aW5nY2luQGdtYWlsLmNvbSIsInBsYW4iOiJ1bHRyYSIsIm5ld3NmZWVkX2VuYWJsZWQiOnRydWUsIndlYnNvY2tldF9zeW1ib2xzIjo1LCJ3ZWJzb2NrZXRfY29ubmVjdGlvbnMiOjF9.6aA_ND-9NmZI2-8mILRJeZDLt9Y6skrtsNbzP0FeQVI"
                 xau_data_manager = XAUDataManager(bearer_token=bearer_token)
 
                 # Start XAU data polling in background
                 asyncio.create_task(startup_xau_data())
                 logger.info("✅ XAU 数据服务已启动 (InsightSentry)")
-
-                # MacroPulse: DXY/US2Y 前向轮询（REST，独立后台任务，不碰 WS）
-                from macropulse.realtime_poll import start_pollers
-                start_pollers(bearer_token, DATABASE_PATH)
-
-                # MacroPulse: 宏观数据日历前向轮询（CPI/PCE/非农 consensus，每日）
-                from macropulse.attribution.calendar_source import start_macro_poller
-                start_macro_poller(bearer_token, DATABASE_PATH)
             except Exception as e:
                 logger.error(f"❌ XAU 数据服务初始化失败: {e}")
+        else:
+            logger.info("⏸️  XAUUSD 数据源已暂停（盘口/XAU 行情/指标端点将返回 503）")
+
+        # MacroPulse（央行鹰鸽）轮询：独立于 XAU 开关，始终运行 —— 保留功能
+        try:
+            # MacroPulse: DXY/US2Y 前向轮询（REST，独立后台任务，不碰 WS）
+            from macropulse.realtime_poll import start_pollers
+            start_pollers(bearer_token, DATABASE_PATH)
+
+            # MacroPulse: 宏观数据日历前向轮询（CPI/PCE/非农 consensus，每日）
+            from macropulse.attribution.calendar_source import start_macro_poller
+            start_macro_poller(bearer_token, DATABASE_PATH)
+            logger.info("✅ MacroPulse 轮询已启动 (DXY/US2Y + 宏观日历)")
+        except Exception as e:
+            logger.error(f"❌ MacroPulse 轮询启动失败: {e}")
 
         # Initialize Financial News service
         if NEWS_ENABLED:

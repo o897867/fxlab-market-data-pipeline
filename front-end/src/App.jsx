@@ -4,52 +4,18 @@ import './App.css';
 import './index.css';
 import Navigation from './components/Navigation.jsx';
 
-// Weekly mindmap module (lazy-loaded, fully isolated)
-import { useIsMobile } from './weekly/hooks/useIsMobile';
-const TimelineView = lazy(() => import('./weekly/pages/TimelineView.tsx'));
-const NodeDetailPage = lazy(() => import('./weekly/pages/NodeDetailPage.tsx'));
-const TopicsView = lazy(() => import('./weekly/pages/TopicsView.tsx'));
-const GraphView = lazy(() => import('./weekly/pages/GraphView.tsx'));
-// Mobile weekly
-const MobileApp = lazy(() => import('./weekly/mobile/MobileApp.tsx'));
-const MobileNodeDetail = lazy(() => import('./weekly/mobile/MobileNodeDetail.tsx'));
-const MobileTopicView = lazy(() => import('./weekly/mobile/MobileTopicView.tsx'));
-const MobileErrorBoundary = lazy(() => import('./weekly/mobile/components/MobileErrorBoundary.tsx').then(m => ({ default: m.MobileErrorBoundary })));
+// 周报导图(Weekly mindmap) 已隐去：前端路由与导航移除（后端路由保留，不占资源）
 import Home from './pages/Home.jsx';
 const Fortune = lazy(() => import('./pages/Fortune.jsx'));
 const News = lazy(() => import('./pages/News.jsx'));
-const OrderBook = lazy(() => import('./pages/OrderBook.jsx'));
+// 盘口放大镜(OrderBook) 已隐去：XAUUSD 数据源暂停，前端路由移除（页面文件保留）
 const LeverageCalculator = lazy(() => import('./pages/LeverageCalculator.jsx'));
 const Guide = lazy(() => import('./pages/Guide.jsx'));
 const Analytics = lazy(() => import('./pages/Analytics.jsx'));
 const MacroPulse = lazy(() => import('./pages/MacroPulse.jsx'));
 const OptionLens = lazy(() => import('./pages/OptionLens.jsx'));
 import { LanguageProvider } from './hooks/useLanguage.jsx';
-import TopNav from './components/TopNav.jsx';
 
-
-/** Thin wrapper so weekly routes also show the hamburger nav. */
-const WeeklyNav = () => {
-  const handleSetPage = (id) => {
-    if (id === 'weekly-mindmap') return;
-    window.location.href = `/#${id}`;
-  };
-  return <Navigation currentPage="weekly-mindmap" setCurrentPage={handleSetPage} />;
-};
-
-/** Viewport-based dispatch for weekly routes */
-function WeeklyEntry() {
-  const isMobile = useIsMobile();
-  return isMobile ? <MobileApp /> : <TimelineView />;
-}
-function WeeklyNodeEntry() {
-  const isMobile = useIsMobile();
-  return isMobile ? <MobileNodeDetail /> : <NodeDetailPage />;
-}
-function WeeklyTopicEntry() {
-  const isMobile = useIsMobile();
-  return isMobile ? <MobileTopicView /> : <TopicsView />;
-}
 
 const App = () => {
   // Initialize page from URL hash or localStorage; fallback to 'home'
@@ -80,7 +46,7 @@ const App = () => {
 
   // Listen for external hash changes (e.g. TopNav without onNavigate)
   useEffect(() => {
-    const known = ['home','forum','forum-mod','predictions','news','health','health-token','health-match','trading','orderbook','fortune','leverage-calculator','guide','login','register','withdrawal-rate','liquidity-crisis','analytics','macro-pulse','option-lens'];
+    const known = ['home','forum','forum-mod','predictions','news','health','health-token','health-match','trading','fortune','leverage-calculator','guide','login','register','withdrawal-rate','liquidity-crisis','analytics','macro-pulse','option-lens'];
     const onHashChange = () => {
       const hash = (window.location.hash || '').replace('#', '').split('?')[0];
       if (hash && known.includes(hash) && hash !== currentPage) {
@@ -95,42 +61,7 @@ const App = () => {
 
   return (
     <Routes>
-      {/* Weekly mindmap module — isolated routes, mobile/desktop dispatch */}
-      <Route path="/weekly-mindmap" element={
-        <Suspense fallback={<div className="muted">Loading…</div>}>
-          <TopNav />
-          <WeeklyNav />
-          <WeeklyEntry />
-        </Suspense>
-      } />
-      <Route path="/weekly-mindmap/nodes/:id" element={
-        <Suspense fallback={<div className="muted">Loading…</div>}>
-          <TopNav />
-          <WeeklyNav />
-          <WeeklyNodeEntry />
-        </Suspense>
-      } />
-      <Route path="/weekly-mindmap/topics" element={
-        <Suspense fallback={<div className="muted">Loading…</div>}>
-          <TopNav />
-          <WeeklyNav />
-          <WeeklyTopicEntry />
-        </Suspense>
-      } />
-      <Route path="/weekly-mindmap/topics/:slug" element={
-        <Suspense fallback={<div className="muted">Loading…</div>}>
-          <TopNav />
-          <WeeklyNav />
-          <WeeklyTopicEntry />
-        </Suspense>
-      } />
-      <Route path="/weekly-mindmap/graph" element={
-        <Suspense fallback={<div className="muted">Loading…</div>}>
-          <TopNav />
-          <WeeklyNav />
-          <GraphView />
-        </Suspense>
-      } />
+      {/* 周报导图(weekly-mindmap) 路由已隐去 */}
 
       {/* Existing hash-based app — catch-all */}
       <Route path="*" element={
@@ -163,10 +94,6 @@ const HashApp = ({ currentPage, setCurrentPage }) => {
       ) : currentPage === 'leverage-calculator' ? (
         <Suspense fallback={<div className="muted">Loading…</div>}>
           <LeverageCalculator />
-        </Suspense>
-      ) : currentPage === 'orderbook' ? (
-        <Suspense fallback={<div className="muted">Loading…</div>}>
-          <OrderBook />
         </Suspense>
       ) : currentPage === 'guide' ? (
         <Suspense fallback={<div className="muted">Loading…</div>}>

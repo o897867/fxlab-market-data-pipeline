@@ -190,34 +190,37 @@ def main():
     watermark = get_watermark()
     logger.info(f"水位线: {watermark}")
 
-    table = None
+    # 默认（无 --table，即每日 cron）：仅处理新闻情绪分析。
+    # XAUUSD / DXY / US2Y 的摄取与计算已暂停（数据分析只保留新闻情绪）。
+    # 如需手动导出某个品种，仍可用 `--table xau|dxy|us2y|news`。
+    table = "news"
     if len(sys.argv) > 1 and sys.argv[1] == "--table":
-        table = sys.argv[2] if len(sys.argv) > 2 else None
+        table = sys.argv[2] if len(sys.argv) > 2 else "news"
 
-    if table is None or table == "xau":
+    if table == "xau":
         export_xau(watermark)
-    if table is None or table == "dxy":
+    elif table == "dxy":
         export_instrument(watermark, "dxy", "dxy_candles_1m")
-    if table is None or table == "us2y":
+    elif table == "us2y":
         export_instrument(watermark, "us2y", "us2y_candles_1m")
-    if table is None or table == "news":
+    elif table == "news":
         export_news(watermark)
 
     save_watermark(watermark)
     logger.info("导出完成")
 
-    # Export 成功后触发 Lambda 分析
-    trigger_lambda()
+    # Export 成功后触发 Lambda 分析：与本次导出的品种一致。
+    trigger_lambda(analysis=table)
 
 
-def trigger_lambda():
-    """导出完成后自动触发分析 Lambda"""
+def trigger_lambda(analysis: str = "news"):
+    """导出完成后自动触发分析 Lambda（默认仅新闻情绪）"""
     try:
         client = boto3.client("lambda", region_name=S3_REGION)
         resp = client.invoke(
             FunctionName=LAMBDA_FUNCTION_NAME,
             InvocationType="Event",  # 异步，不等结果
-            Payload=json.dumps({"analysis": "all", "trigger": "export_to_s3"}),
+            Payload=json.dumps({"analysis": analysis, "trigger": "export_to_s3"}),
         )
         logger.info(f"Lambda '{LAMBDA_FUNCTION_NAME}' triggered, status={resp['StatusCode']}")
     except Exception as e:

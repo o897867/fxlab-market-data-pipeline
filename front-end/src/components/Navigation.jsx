@@ -11,9 +11,8 @@ const Navigation = ({ currentPage, setCurrentPage, currentUser, onLogout }) => {
     {
       title: translate('nav.groups.explore'),
       items: [
-        { id: 'home', label: translate('nav.home'), badge: 'recommended' },
-        { id: 'guide', label: translate('nav.guide'), badge: 'new' },
-        { id: 'fortune', label: translate('nav.fortune'), badge: 'new' }
+        { id: 'home', label: translate('nav.home'), badge: 'recommended' }
+        // 使用指南(guide)、玄学择时(fortune) 已从导航隐去（路由/页面保留）
       ]
     },
     // 健康相关功能暂时隐藏
@@ -28,13 +27,13 @@ const Navigation = ({ currentPage, setCurrentPage, currentUser, onLogout }) => {
     {
       title: translate('nav.groups.community'),
       items: [
-        { id: 'orderbook', label: translate('orderbook.hero.badge') },
+        // 盘口放大镜(orderbook) 已隐去（XAUUSD 数据源暂停）
         { id: 'leverage-calculator', label: translate('nav.leverage') },
         { id: 'news', label: translate('nav.news'), badge: 'new' },
         { id: 'analytics', label: currentLanguage === 'zh-CN' ? '数据分析' : 'Analytics', badge: 'new' },
         { id: 'macro-pulse', label: currentLanguage === 'zh-CN' ? '央行鹰鸽' : 'MacroPulse', badge: 'new' },
         { id: 'option-lens', label: currentLanguage === 'zh-CN' ? '期权透镜' : 'OptionLens', badge: 'new' },
-        { id: 'weekly-mindmap', label: currentLanguage === 'zh-CN' ? '周报导图' : 'Weekly Mindmap', badge: 'new' },
+        // 周报导图(weekly-mindmap) 已从导航隐去
         ...(currentLanguage === 'cn' ? [
           { id: 'withdrawal-rate', label: '出金汇率', badge: 'new' },
           { id: 'liquidity-crisis', label: '流动性危机图', badge: 'new' }
