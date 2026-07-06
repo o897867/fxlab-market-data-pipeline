@@ -103,6 +103,49 @@ function TermPanel({ ts }) {
   );
 }
 
+/* ── ⑥⑦ 时序：IV Rank（贵贱）+ P/C 情绪。皆为市场当前定价的客观统计，不预测。 ── */
+const PC_ICON = { rising: '↑', falling: '↓', flat: '→' };
+
+function SeriesPanel({ ivr, pcr }) {
+  if (!ivr) return <div className="ol-empty">加载中…</div>;
+  if (!ivr.available) return <div className="ol-empty">该标的暂无快照数据</div>;
+  const rank = ivr.iv_rank;
+  const dotLv = ivr.maturing ? 'mature' : rank >= 80 ? 'hot' : rank >= 50 ? 'mid' : 'calm';
+  return (
+    <section className="card imp-card">
+      <p className="card__eyebrow"><span className="n">06</span><span>时序 · 贵贱与情绪 · OVER TIME</span><span className="rule" /></p>
+
+      <div className="sr-block">
+        <div className="sr-top">
+          <span className="sr-title">现在期权贵不贵</span>
+          <span className="sr-lv"><span className={`wb-dot lv-${dotLv}`} />{ivr.level}</span>
+        </div>
+        <p className="lead" style={{ fontSize: 17, margin: '4px 0 12px' }}>{ivr.description}</p>
+        {!ivr.maturing && rank != null ? (
+          <>
+            <div className="sr-gauge"><div className={`sr-gauge__fill lv-${dotLv}`} style={{ width: `${rank}%` }} /></div>
+            <div className="sr-gauge__ax"><span>便宜</span><span className="mono">IV Rank {Math.round(rank)}/100</span><span>贵</span></div>
+          </>
+        ) : (
+          <p className="caption">数据积累中（{ivr.data_days} 天）——满 30 天后 IV Rank 才有参照系，暂不给贵贱结论。</p>
+        )}
+      </div>
+
+      {pcr && pcr.available && (
+        <div className="sr-block">
+          <div className="sr-top">
+            <span className="sr-title">情绪风向 · P/C</span>
+            <span className={`sr-lv wb-arrow ${pcr.trend}`}>{PC_ICON[pcr.trend]} {pcr.stance}</span>
+          </div>
+          <p className="lead" style={{ fontSize: 17, margin: '4px 0 8px' }}>{pcr.headline}</p>
+          <p className="caption">{pcr.sub}</p>
+        </div>
+      )}
+      <p className="caption" style={{ marginTop: 16, color: 'var(--ol-4)' }}>以上为期权市场当前定价的客观统计，不预测走势。</p>
+    </section>
+  );
+}
+
 /* ── ④ 影响面板：可信度从高到低，GEX(低)整块淡红底提醒 ── */
 function ImpactPanel({ imp }) {
   if (!imp) return <div className="ol-empty">加载中…</div>;
@@ -195,6 +238,8 @@ const OptionLens = () => {
   const dist = useFetch(view === 'detail' ? `/api/option/distribution?symbol=${sym.code}` : null);
   const imp = useFetch(tab === 'impact' ? `/api/option/impact?symbol=${sym.code}` : null);
   const ts = useFetch(tab === 'term' ? `/api/option/term-structure?symbol=${sym.code}` : null);
+  const ivr = useFetch(tab === 'series' ? `/api/option/iv-rank?symbol=${sym.code}` : null);
+  const pcr = useFetch(tab === 'series' ? `/api/option/pc-trend?symbol=${sym.code}` : null);
 
   // ② 目标价 → 防抖查概率
   const [target, setTarget] = useState('');
@@ -257,13 +302,14 @@ const OptionLens = () => {
         {view === 'board' ? <WatchBoard report={board} onPick={pick} /> : (
         <>
         <div className="ol-tabs">
-          {[['overview', '总览'], ['impact', '影响'], ['term', '期限']].map(([k, label]) => (
+          {[['overview', '总览'], ['impact', '影响'], ['term', '期限'], ['series', '时序']].map(([k, label]) => (
             <button key={k} className={`ol-tab${tab === k ? ' on' : ''}`} onClick={() => setTab(k)}>{label}</button>
           ))}
         </div>
 
         <div className="wrap">
-          {tab === 'impact' ? <ImpactPanel imp={imp} /> : tab === 'term' ? <TermPanel ts={ts} /> : (
+          {tab === 'impact' ? <ImpactPanel imp={imp} /> : tab === 'term' ? <TermPanel ts={ts} />
+            : tab === 'series' ? <SeriesPanel ivr={ivr} pcr={pcr} /> : (
           <div className="ol-cols">
           <div className="ol-col">
           {/* ① 预期范围 */}

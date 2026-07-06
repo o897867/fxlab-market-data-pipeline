@@ -318,8 +318,11 @@ def iv_rank(symbol: str) -> dict:
     maturing = days is None or days < IV_RANK_MIN_DAYS
 
     # 翻译铁律：只陈述"市场当前如何定价"的事实，不预测未来、不给建议。
-    if rank is None:
-        level, desc = "数据积累中", f"目前只攒了 {days} 天快照,区间还没走出来,先不下结论。"
+    # 冷启动一致性：未满 30 天（maturing）或高低相等（rank=None）时统一给"积累中"，
+    # 不让 headline 说"偏贵"而 caption 又说"先别下结论"自相矛盾。
+    if rank is None or maturing:
+        level = "数据积累中"
+        desc = f"目前只攒了 {days} 天快照,IV Rank 还没有可靠的参照系,先不下贵贱结论。"
     elif rank >= 80:
         level = "偏贵"
         desc = (f"现在期权处于过去一年区间的高位(IV Rank {rank:.0f}/100),"
@@ -331,7 +334,7 @@ def iv_rank(symbol: str) -> dict:
         level = "偏便宜"
         desc = f"现在期权比过去便宜(处于过去区间后 {rank:.0f}%),市场当前定价相对平静。"
 
-    headline = f"{name}:{level}" + (f"(IV Rank {rank:.0f})" if rank is not None else "")
+    headline = f"{name}:{level}" + (f"(IV Rank {rank:.0f})" if rank is not None and not maturing else "")
     return {
         "symbol": symbol, "available": True, "as_of": str(as_of),
         "level": level, "headline": headline, "description": desc,

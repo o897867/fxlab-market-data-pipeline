@@ -182,3 +182,18 @@
 .olp .wb-arrow.falling { color: var(--ol-up); }
 .olp .wb-arrow.flat { color: var(--ol-4); }
 .olp .wb-foot { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.03em; color: var(--ol-4); line-height: 1.6; text-align: center; padding: 24px 18px 8px; }
+
+/* ⑥⑦ 时序面板 */
+.olp .sr-block { padding: 16px 0; border-top: 1px solid var(--ol-line-soft); }
+.olp .sr-block:first-of-type { border-top: none; padding-top: 4px; }
+.olp .sr-top { display: flex; align-items: center; justify-content: space-between; }
+.olp .sr-title { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+.olp .sr-lv { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 12px; color: var(--ol-2); }
+.olp .sr-gauge { height: 8px; border-radius: 999px; background: var(--ol-soft); border: 1px solid var(--ol-line); overflow: hidden; margin: 6px 0 5px; }
+.olp .sr-gauge__fill { height: 100%; border-radius: 999px; }
+.olp .sr-gauge__fill.lv-hot { background: #b91c1c; }
+.olp .sr-gauge__fill.lv-mid { background: var(--ol-prot); }
+.olp .sr-gauge__fill.lv-calm { background: var(--ol-up); }
+.olp .sr-gauge__fill.lv-mature { background: var(--ol-4); }
+.olp .sr-gauge__ax { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9.5px; color: var(--ol-4); }
+.olp .sr-gauge__ax .mono { color: var(--ol-3); }
