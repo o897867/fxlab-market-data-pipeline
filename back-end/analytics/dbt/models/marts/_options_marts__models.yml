@@ -50,3 +50,34 @@ models:
       - name: put_oi
         data_tests:
           - dbt_utils.accepted_range: {min_value: 0, inclusive: true}
+
+  - name: mart_iv_rank
+    description: "时序面板：每(标的) 的 IV Rank / IV Percentile（~30DTE ATM IV 对比历史窗口），附 data_days 冷启动标注。"
+    columns:
+      - name: underlying_code
+        data_tests: [not_null, unique]
+      - name: iv_current
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 10, inclusive: false}
+      - name: iv_rank
+        # 高低相等（数据太少）时允许为 null；有值则必须落在 [0,100]
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 100}
+      - name: iv_percentile
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 100}
+      - name: data_days
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 1, inclusive: true}
+
+  - name: mart_pc_trend
+    description: "情绪信号：每(标的) 的全链 Put/Call OI 比今天 vs ~5交易日前 + 趋势(rising/falling/flat)。"
+    columns:
+      - name: underlying_code
+        data_tests: [not_null, unique]
+      - name: pc_today
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: true}
+      - name: trend
+        data_tests:
+          - accepted_values: {values: ["rising", "falling", "flat"]}

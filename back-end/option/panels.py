@@ -293,3 +293,203 @@ def _nice_step(raw: float) -> float:
         if s >= raw * 0.85:
             return s
     return 5000
+
+
+# ----------------------------------------------------------------- 面板⑥ IV Rank（时序）
+
+# 冷启动门槛：快照少于这么多天，IV Rank 的 min/max 区间还没走出来，参考价值有限。
+IV_RANK_MIN_DAYS = 30
+
+
+def iv_rank(symbol: str) -> dict:
+    """现在期权比过去(最多一年)贵还是便宜。翻译别越界——用户不做期权，
+    只翻成"对持有正股的你意味着什么"（doc §4.3）。"""
+    con = _con()
+    try:
+        row = con.execute(
+            "SELECT iv_current, iv_low, iv_high, iv_rank, iv_percentile, data_days, as_of "
+            "FROM main_marts.mart_iv_rank WHERE underlying_code=?", [symbol]).fetchone()
+    finally:
+        con.close()
+    if not row:
+        return {"symbol": symbol, "available": False}
+    iv_now, lo, hi, rank, pct, days, as_of = row
+    name = _sym_short(symbol)
+    maturing = days is None or days < IV_RANK_MIN_DAYS
+
+    # 翻译铁律：只陈述"市场当前如何定价"的事实，不预测未来、不给建议。
+    if rank is None:
+        level, desc = "数据积累中", f"目前只攒了 {days} 天快照,区间还没走出来,先不下结论。"
+    elif rank >= 80:
+        level = "偏贵"
+        desc = (f"现在期权处于过去一年区间的高位(IV Rank {rank:.0f}/100),"
+                f"说明市场当前为波动定的价比平时高得多。")
+    elif rank >= 50:
+        level = "中等"
+        desc = f"期权价格处于过去区间的中段({rank:.0f}/100),不算贵也不算便宜。"
+    else:
+        level = "偏便宜"
+        desc = f"现在期权比过去便宜(处于过去区间后 {rank:.0f}%),市场当前定价相对平静。"
+
+    headline = f"{name}:{level}" + (f"(IV Rank {rank:.0f})" if rank is not None else "")
+    return {
+        "symbol": symbol, "available": True, "as_of": str(as_of),
+        "level": level, "headline": headline, "description": desc,
+        "iv_current": round(float(iv_now), 4),
+        "iv_rank": round(float(rank), 1) if rank is not None else None,
+        "iv_percentile": round(float(pct), 1) if pct is not None else None,
+        "iv_low": round(float(lo), 4), "iv_high": round(float(hi), 4),
+        "data_days": int(days), "maturing": maturing,
+        "sub": ("数据积累中,参考价值有限——满 30 天后更可信。"
+                if maturing else "IV Rank = 当前隐含波动率在过去一年高低区间里的位置。"),
+    }
+
+
+# ----------------------------------------------------------------- 面板⑦ P/C 情绪趋势（时序）
+
+def pc_trend(symbol: str) -> dict:
+    """看跌/看涨未平仓量比 + 5 日趋势 —— 防守情绪升温还是降温。"""
+    con = _con()
+    try:
+        row = con.execute(
+            "SELECT pc_today, pc_prev, days_back, trend, as_of "
+            "FROM main_marts.mart_pc_trend WHERE underlying_code=?", [symbol]).fetchone()
+    finally:
+        con.close()
+    if not row:
+        return {"symbol": symbol, "available": False}
+    today, prev, days_back, trend, as_of = row
+    name = _sym_short(symbol)
+    today = float(today)
+
+    stance = "偏防守" if today >= 1.1 else ("偏进攻" if today <= 0.9 else "中性")
+    move = {"rising": "防守情绪在升温", "falling": "防守情绪在降温", "flat": "情绪大体平稳"}[trend]
+    span = f"过去 {int(days_back)} 天" if days_back else "目前"
+    headline = f"{name}:{stance}(P/C {today:.2f}),{span}{move}。"
+    return {
+        "symbol": symbol, "available": True, "as_of": str(as_of),
+        "stance": stance, "trend": trend, "headline": headline,
+        "pc_today": round(today, 3),
+        "pc_prev": round(float(prev), 3) if prev is not None else None,
+        "days_back": int(days_back) if days_back is not None else 0,
+        "sub": "看跌/看涨未平仓量之比;比值越高说明买保护的越多。未平仓量截至昨收。",
+    }
+
+
+# ----------------------------------------------------------------- watchlist 日报聚合
+
+def _pick_expiry_py(exps: list) -> "date | None":
+    """从到期日列表里按 panels 一致的规则挑一个：剩余 ≥ MIN_DTE 里优先最近的月度，否则最近。"""
+    if not exps:
+        return None
+    today = date.today()
+    future = [e for e in exps if (e - today).days >= config.MIN_DTE]
+    monthly = [e for e in future if _is_monthly(e)]
+    return (monthly or future or exps)[0]
+
+
+def daily_report() -> dict:
+    """全 watchlist 概览：每票一张精简卡（IV Rank + 预期波动 + 情绪）。
+    排序：有财报的置顶，其余按 IV Rank 降序（最"紧张"的在前）。首页用。"""
+    symbols = config.DEFAULT_SYMBOLS
+    from option import earnings as _earn
+    earn = _earn.load()
+
+    con = _con()
+    try:
+        ivr = {r[0]: r for r in con.execute(
+            "SELECT underlying_code, iv_current, iv_rank, data_days FROM main_marts.mart_iv_rank"
+        ).fetchall()}
+        pct = {r[0]: r for r in con.execute(
+            "SELECT underlying_code, pc_today, trend FROM main_marts.mart_pc_trend"
+        ).fetchall()}
+        # 预期波动：一次拉全部，按票在 Python 里挑到期日
+        em_rows = con.execute(
+            "SELECT underlying_code, expiration, band_low, band_high, pct, spot "
+            "FROM main_marts.mart_expected_move").fetchall()
+    finally:
+        con.close()
+
+    em_by_sym: dict[str, dict] = {}
+    for code, exp, lo, hi, p, spot in em_rows:
+        em_by_sym.setdefault(code, {})[exp] = (lo, hi, p, spot)
+
+    cards = []
+    today = date.today()
+    for code in symbols:
+        name = _sym_short(code)
+        ir = ivr.get(code)
+        rank = round(float(ir[2]), 1) if ir and ir[2] is not None else None
+        days = int(ir[3]) if ir else 0
+        maturing = ir is None or ir[3] is None or ir[3] < IV_RANK_MIN_DAYS
+
+        em = em_by_sym.get(code, {})
+        exp = _pick_expiry_py(sorted(em.keys())) if em else None
+        band = em.get(exp)
+        pc = pct.get(code)
+
+        ed = (earn.get(code) or {}).get("date") if earn.get(code) else None
+        days_to_earn = (date.fromisoformat(ed) - today).days if ed else None
+        # 只有临近(≤14 天)的财报才置顶；远期财报仍展示日期但不抢排序
+        earnings_soon = days_to_earn is not None and 0 <= days_to_earn <= 14
+
+        cards.append({
+            "symbol": code, "name": name,
+            "iv_rank": rank, "iv_maturing": maturing, "data_days": days,
+            "spot": round(float(band[3]), 2) if band else None,
+            "band_low": round(float(band[0]), 2) if band else None,
+            "band_high": round(float(band[1]), 2) if band else None,
+            "em_pct": round(float(band[2]) * 100, 1) if band else None,
+            "pc_today": round(float(pc[1]), 2) if pc else None,
+            "pc_trend": pc[2] if pc else None,
+            "earnings_date": ed, "days_to_earnings": days_to_earn,
+            "earnings_soon": earnings_soon,
+        })
+
+    # 排序：临近财报(≤14天)置顶（按天数近→远）；其余按 IV Rank 降序，null 垫底
+    cards.sort(key=lambda c: (
+        not c["earnings_soon"],
+        c["days_to_earnings"] if c["earnings_soon"] else 0,
+        -(c["iv_rank"] if c["iv_rank"] is not None else -1),
+    ))
+    return {"as_of": str(today), "count": len(cards), "cards": cards,
+            "disclaimer": "以上为期权市场当前定价的客观统计,不预测走势、不构成投资建议。"}
+
+
+def iv_rank_board() -> dict:
+    """watchlist IV Rank 排行（降序）。给"哪些票现在最紧张"的一眼榜。"""
+    con = _con()
+    try:
+        rows = con.execute(
+            "SELECT underlying_code, iv_current, iv_rank, iv_percentile, data_days "
+            "FROM main_marts.mart_iv_rank ORDER BY iv_rank DESC NULLS LAST").fetchall()
+    finally:
+        con.close()
+    board = [{
+        "symbol": r[0], "name": _sym_short(r[0]),
+        "iv_current": round(float(r[1]), 4),
+        "iv_rank": round(float(r[2]), 1) if r[2] is not None else None,
+        "iv_percentile": round(float(r[3]), 1) if r[3] is not None else None,
+        "data_days": int(r[4]), "maturing": r[4] is None or r[4] < IV_RANK_MIN_DAYS,
+    } for r in rows]
+    return {"count": len(board), "board": board}
+
+
+def earnings_calendar() -> dict:
+    """未来两周 watchlist 财报排期（按日期升序）。"""
+    from option import earnings as _earn
+    earn = _earn.load()
+    today = date.today()
+    items = []
+    for code in config.DEFAULT_SYMBOLS:
+        e = earn.get(code)
+        ed = (e or {}).get("date")
+        if not ed:
+            continue
+        d = date.fromisoformat(ed)
+        dd = (d - today).days
+        if 0 <= dd <= 14:
+            items.append({"symbol": code, "name": _sym_short(code), "date": ed,
+                          "days_away": dd, "eps_forecast": (e or {}).get("eps_forecast")})
+    items.sort(key=lambda x: x["days_away"])
+    return {"as_of": str(today), "count": len(items), "events": items}

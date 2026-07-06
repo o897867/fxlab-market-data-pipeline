@@ -17,8 +17,14 @@ source venv/bin/activate 2>/dev/null || source .venv/bin/activate 2>/dev/null
   python -m option.earnings 2>&1   # 下次财报日缓存（事件预期用）
   cd "$ROOT/analytics/dbt" || exit 1
   export DBT_DUCKDB_PATH="$ROOT/analytics/dbt/eventstudy.duckdb"
+  # 全部期权 marts 一次重建：之前漏了 mart_impact / mart_term_structure，
+  # 导致影响面板/期限结构面板读到陈旧数据。fct_* 是 IV/OI 时序基石，务必每日重算。
   dbt run --select stg_options_quotes stg_options_contracts stg_options_underlying \
       int_option_chain fct_iv_snapshot fct_oi_snapshot \
-      mart_expected_move mart_probability_curve mart_strike_distribution 2>&1
+      mart_expected_move mart_probability_curve mart_strike_distribution \
+      mart_impact mart_term_structure mart_iv_rank mart_pc_trend 2>&1
+  # 快照持久化到 S3 + freshness 断档检查（不可逆资产的备份，见 sync_s3 docstring）。
+  cd "$ROOT" || exit 1
+  python -m option.sync_s3 2>&1
   echo "done $(date -u +'%H:%M:%S')"
 } >> "$LOG" 2>&1

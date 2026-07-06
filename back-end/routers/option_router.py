@@ -59,3 +59,33 @@ async def impact(symbol: str = Query(...), expiry: str | None = None):
 async def term_structure(symbol: str = Query(...)):
     """面板⑤期限结构：近月 vs 远月 ATM IV 曲线 + 形态。"""
     return _guard(panels.term_structure, symbol)
+
+
+@router.get("/iv-rank")
+async def iv_rank(symbol: str = Query(...)):
+    """面板⑥ IV Rank：现在期权比过去(最多一年)贵还是便宜的客观统计（带冷启动标注）。"""
+    return _guard(panels.iv_rank, symbol)
+
+
+@router.get("/pc-trend")
+async def pc_trend(symbol: str = Query(...)):
+    """面板⑦ 情绪：看跌/看涨 OI 比 + 5 日趋势（防守升温/降温，客观统计）。"""
+    return _guard(panels.pc_trend, symbol)
+
+
+@router.get("/daily-report")
+async def daily_report():
+    """全 watchlist 概览：每票一张精简卡，临近财报置顶、其余按 IV Rank 降序。首页用。"""
+    return _guard(panels.daily_report)
+
+
+@router.get("/iv-board")
+async def iv_board():
+    """watchlist IV Rank 排行（降序）——哪些票现在定价最贵。"""
+    return _guard(panels.iv_rank_board)
+
+
+@router.get("/earnings-calendar")
+async def earnings_calendar():
+    """未来两周 watchlist 财报排期。"""
+    return _guard(panels.earnings_calendar)
