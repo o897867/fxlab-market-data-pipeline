@@ -246,6 +246,9 @@ app.include_router(macro_router, tags=["MacroPulse"])
 from routers.option_router import router as option_router
 app.include_router(option_router, tags=["OptionLens"])
 
+from routers.market_router import router as market_router
+app.include_router(market_router, tags=["Market"])
+
 # ============= Weekly Mindmap 模块 =============
 from weekly.router import router as weekly_router
 app.include_router(weekly_router)

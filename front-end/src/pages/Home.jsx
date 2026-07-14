@@ -5,6 +5,7 @@ import { useLanguage } from '../hooks/useLanguage.jsx';
 import { t } from '../translations/index';
 
 const OPEN_ACCOUNT_URL = 'https://portal.cnfxhero.com/register?node=MjE4MzQw&language=zh-Hans';
+const API = import.meta.env.VITE_API_URL || '';
 
 const Home = ({ onNavigate }) => {
   const { currentLanguage } = useLanguage();
@@ -14,390 +15,211 @@ const Home = ({ onNavigate }) => {
   const [news, setNews] = useState([]);
   const [weekly, setWeekly] = useState(null);
   const [gua, setGua] = useState(null);
+  const [indices, setIndices] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
 
-  // Fetch news
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || '';
-        const res = await fetch(`${apiBase}/api/news/latest?limit=5`);
+        const res = await fetch(`${API}/api/news/latest?limit=6`);
         if (!res.ok) throw new Error('Failed');
         const data = await res.json();
-        if (!cancelled) setNews((data.news || []).filter(item => item.summary).slice(0, 5));
-      } catch (e) {
-        console.warn('Failed to load news:', e);
-      } finally {
-        if (!cancelled) setNewsLoading(false);
-      }
+        if (!cancelled) setNews((data.news || []).filter(item => item.summary).slice(0, 6));
+      } catch (e) { console.warn('news:', e); }
+      finally { if (!cancelled) setNewsLoading(false); }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  // Fetch weekly reports
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || '';
-        const res = await fetch(`${apiBase}/api/weekly/reports`);
+        const res = await fetch(`${API}/api/weekly/reports`);
         if (!res.ok) throw new Error('Failed');
         const reports = await res.json();
         if (!cancelled && reports.length > 0) {
-          const latest = reports[0];
-          const detailRes = await fetch(`${apiBase}/api/weekly/reports/${latest.id}`);
-          if (detailRes.ok) {
-            const detail = await detailRes.json();
-            if (!cancelled) setWeekly(detail);
-          }
+          const detailRes = await fetch(`${API}/api/weekly/reports/${reports[0].id}`);
+          if (detailRes.ok) { const detail = await detailRes.json(); if (!cancelled) setWeekly(detail); }
         }
-      } catch (e) {
-        console.warn('Failed to load weekly:', e);
-      }
+      } catch (e) { console.warn('weekly:', e); }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  // Fetch fortune
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || '';
-        const res = await fetch(`${apiBase}/api/fortune`);
+        const res = await fetch(`${API}/api/fortune`);
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled && data?.gua) setGua(data.gua);
-      } catch (e) {
-        console.warn('Failed to load fortune:', e);
-      }
+      } catch (e) { console.warn('fortune:', e); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API}/api/market/indices`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && data?.indices) setIndices(data.indices);
+      } catch (e) { console.warn('indices:', e); }
     })();
     return () => { cancelled = true; };
   }, []);
 
   const handleNavigate = (target) => {
-    if (target === 'weekly-mindmap') {
-      window.location.href = '/weekly-mindmap';
-      return;
-    }
-    if (!onNavigate) return;
-    onNavigate(target);
+    if (target === 'weekly-mindmap') { window.location.href = '/weekly-mindmap'; return; }
+    if (onNavigate) onNavigate(target);
   };
 
-  // Sentiment badge
-  const getSentimentClass = (sentiment) => {
-    if (!sentiment) return '';
-    const s = sentiment.toLowerCase();
-    if (s === 'positive') return 'hp-badge--green';
-    if (s === 'negative') return 'hp-badge--red';
-    return 'hp-badge--amber';
-  };
+  const sentClass = s => { s = (s || '').toLowerCase(); return s === 'positive' ? 'up' : s === 'negative' ? 'dn' : 'neu'; };
+  const sentLabel = s => { s = (s || '').toLowerCase(); if (isChinese) return s === 'positive' ? '利好' : s === 'negative' ? '利空' : '中性'; return s === 'positive' ? 'Bull' : s === 'negative' ? 'Bear' : 'Neutral'; };
+  const impLabel = i => { i = (i || '').toLowerCase(); if (isChinese) return (i === 'high' ? '高' : i === 'medium' ? '中等' : '低') + '影响'; return (i === 'high' ? 'High' : i === 'medium' ? 'Med' : 'Low') + ' impact'; };
+  const impClass = i => { i = (i || '').toLowerCase(); return i === 'high' ? 'dn' : i === 'medium' ? 'neu' : 'neu'; };
 
-  const getSentimentLabel = (sentiment) => {
-    if (!sentiment) return '';
-    const s = sentiment.toLowerCase();
-    if (isChinese) {
-      if (s === 'positive') return '积极';
-      if (s === 'negative') return '消极';
-      return '中性';
-    }
-    if (s === 'positive') return 'Positive';
-    if (s === 'negative') return 'Negative';
-    return 'Neutral';
+  const clock = ts => {
+    if (!ts) return '';
+    const d = new Date(ts * 1000);
+    const p = n => String(n).padStart(2, '0');
+    return `${p(d.getHours())}:${p(d.getMinutes())}`;
   };
-
-  // Impact badge
-  const getImpactClass = (impact) => {
-    if (!impact) return '';
-    const i = impact.toLowerCase();
-    if (i === 'high') return 'hp-badge--red';
-    if (i === 'medium') return 'hp-badge--amber';
-    return 'hp-badge--gray';
-  };
-
-  const getImpactLabel = (impact) => {
-    if (!impact) return '';
-    const i = impact.toLowerCase();
-    if (isChinese) {
-      if (i === 'high') return '高影响';
-      if (i === 'medium') return '中等影响';
-      return '低影响';
-    }
-    if (i === 'high') return 'High';
-    if (i === 'medium') return 'Medium';
-    return 'Low';
-  };
-
-  // Format relative time
-  const formatTime = (timestamp) => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp * 1000);
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000);
-    if (diff < 60) return isChinese ? `${diff}秒前` : `${diff}s ago`;
-    if (diff < 3600) return isChinese ? `${Math.floor(diff / 60)}分钟前` : `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return isChinese ? `${Math.floor(diff / 3600)}小时前` : `${Math.floor(diff / 3600)}h ago`;
-    return date.toLocaleDateString();
-  };
-
-  // Get display content
-  const getDisplayContent = (item) => {
-    if (isChinese) return item.summary_cn || item.summary || item.title;
-    return item.summary || item.title;
-  };
+  const displayContent = item => isChinese ? (item.summary_cn || item.summary || item.title) : (item.summary || item.title);
+  const fmtNum = n => (n == null ? '—' : Number(n).toLocaleString('en-US', { maximumFractionDigits: n >= 1000 ? 0 : 2 }));
+  const chgTxt = c => (c == null ? '' : `${c > 0 ? '+' : c < 0 ? '−' : ''}${Math.abs(c).toFixed(2)}%`);
 
   return (
-    <div className="hp">
-      <div className="hp-inner">
+    <div className="hd">
+      <TopNav onNavigate={onNavigate} activePage="home" />
+      <div className="hd-wrap">
 
-        <TopNav onNavigate={onNavigate} activePage="home" />
-
-        {/* Hero */}
-        <section className="hp-hero">
-          <p className="hp-hero__eyebrow">
-            {isChinese ? '面向散户的金融资讯平台 · Retail intelligence' : 'Financial intelligence for retail investors'}
-          </p>
-          <h1 className="hp-hero__title">
-            {isChinese ? (
-              <>万象皆声，<em className="hp-hero__em">唯静者能听</em></>
-            ) : (
-              <>All noise, <em className="hp-hero__em">only the still can hear</em></>
-            )}
-          </h1>
-          <p className="hp-hero__desc">
-            {isChinese
-              ? '我们为普通投资者提供简洁、及时、不废话的市场资讯与交易参考。AI 摘要精华，每日更新，帮你在噪音中找到信号。'
-              : 'We provide concise, timely market intelligence for everyday investors. AI-powered summaries, daily updates — find the signal in the noise.'}
-          </p>
-          <div className="hp-hero__actions">
-            <a
-              href={OPEN_ACCOUNT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hp-btn hp-btn--outline"
-            >
-              {isChinese ? '立即开户' : 'Open account'}
-            </a>
-            <button className="hp-link" onClick={() => handleNavigate('guide')}>
-              {isChinese ? '了解更多 →' : 'Learn more →'}
-            </button>
+        {/* ── Hero: pitch + LIVE market panel ── */}
+        <div className="hd-hero">
+          <div className="hd-hero__l">
+            <p className="hd-eyebrow">{isChinese ? '面向散户的金融资讯平台 · RETAIL INTELLIGENCE' : 'Financial intelligence for retail investors'}</p>
+            <h1 className="hd-hero__title">
+              {isChinese ? <>万象皆声,<em>唯静者能听</em></> : <>All noise, <em>only the still can hear</em></>}
+            </h1>
+            <p className="hd-hero__desc">
+              {isChinese
+                ? '我们为普通投资者提供简洁、及时、不废话的市场资讯与交易参考。AI 摘要精华,每日更新,帮你在噪音中找到信号。'
+                : 'Concise, timely market intelligence for everyday investors. AI-powered summaries, daily updates — find the signal in the noise.'}
+            </p>
+            <div className="hd-hero__cta">
+              <a className="hd-btn hd-btn--dark" href={OPEN_ACCOUNT_URL} target="_blank" rel="noopener noreferrer">{isChinese ? '立即开户' : 'Open account'}</a>
+              <button className="hd-btn hd-btn--ghost" onClick={() => handleNavigate('guide')}>{isChinese ? '了解更多 →' : 'Learn more →'}</button>
+            </div>
           </div>
-        </section>
+          <div className="hd-hero__panel">
+            <h4>{isChinese ? '今日全球市场 · LIVE' : 'Global markets · LIVE'}</h4>
+            {indices.length === 0 ? (
+              <p className="hd-empty">{isChinese ? '加载中…' : 'Loading…'}</p>
+            ) : indices.map(ix => (
+              <div key={ix.code} className="hd-idx">
+                <span className="hd-idx__name">{isChinese ? ix.name : ix.short}<span>{ix.short}</span></span>
+                <span className="hd-idx__r">
+                  <span className="hd-idx__v mono">{fmtNum(ix.last)}</span>
+                  <span className={`hd-idx__c mono ${ix.change_pct >= 0 ? 'up' : 'dn'}`}>{chgTxt(ix.change_pct)}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        {/* Stats strip */}
-        <div className="hp-stats">
+        {/* ── Features ── */}
+        <div className="hd-feats">
           {[
-            { val: isChinese ? '实时' : 'Live', label: isChinese ? '实时金融新闻' : 'Real-time financial news' },
-            { val: 'AI', label: isChinese ? '智能摘要' : 'Smart summaries' },
-            { val: isChinese ? '周报' : 'Weekly', label: isChinese ? '每周深度复盘' : 'Deep weekly review' },
-          ].map(({ val, label }) => (
-            <div key={label} className="hp-stats__item">
-              <div className="hp-stats__val">{val}</div>
-              <div className="hp-stats__label">{label}</div>
+            { icon: <><circle cx="12" cy="12" r="9" /><path d="M12 8v4l3 3" /></>, title: isChinese ? '实时资讯' : 'Real-time news', desc: isChinese ? '聚合全球主流财经媒体,AI 自动摘要,第一时间掌握市场动态。' : 'Aggregated global media, auto-summarized by AI.' },
+            { icon: <><path d="M3 3v18h18" /><path d="M7 16l4-4 4 4 4-6" /></>, title: isChinese ? '专业分析' : 'Expert analysis', desc: isChinese ? '每周深度复盘,涵盖宏观走势、板块轮动与关键技术位。' : 'Weekly deep-dives on macro, rotation and key technicals.' },
+            { icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />, title: isChinese ? '合规经营' : 'Regulated', desc: isChinese ? '持牌运营,受监管机构监督,资金安全有保障,费率透明。' : 'Licensed, regulated, transparent fees, fund protection.' },
+          ].map(({ icon, title, desc }) => (
+            <div key={title} className="hd-feat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">{icon}</svg>
+              <h3>{title}</h3><p>{desc}</p>
             </div>
           ))}
         </div>
 
-        {/* About / Features */}
-        <section>
-          <div className="hp-section-header">
-            <span className="hp-section-header__label">{isChinese ? '关于我们 · About' : 'About us'}</span>
-            <span className="hp-section-header__line" />
-          </div>
-          <div className="hp-features">
-            {[
-              {
-                icon: (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <circle cx="12" cy="12" r="9"/>
-                    <path d="M12 8v4l3 3"/>
-                  </svg>
-                ),
-                title: isChinese ? '实时资讯' : 'Real-time news',
-                desc: isChinese
-                  ? '聚合全球主流财经媒体，AI 自动摘要，第一时间掌握市场动态。'
-                  : 'Aggregated from top financial media, auto-summarized by AI.',
-              },
-              {
-                icon: (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-6"/>
-                  </svg>
-                ),
-                title: isChinese ? '专业分析' : 'Expert analysis',
-                desc: isChinese
-                  ? '每周深度复盘，涵盖宏观走势、板块轮动与关键技术位。'
-                  : 'Weekly deep-dives covering macro trends, sector rotation, and key technicals.',
-              },
-              {
-                icon: (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                  </svg>
-                ),
-                title: isChinese ? '合规经营' : 'Regulated',
-                desc: isChinese
-                  ? '持牌运营，受监管机构监督，资金安全有保障，透明费率。'
-                  : 'Licensed and regulated, with transparent fees and fund protection.',
-              },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} className="hp-feature-card">
-                <div className="hp-feature-card__icon">{icon}</div>
-                <h3 className="hp-feature-card__title">{title}</h3>
-                <p className="hp-feature-card__desc">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* News + Weekly two-column */}
-        <div className="hp-two-col">
-
-          {/* News column */}
+        {/* ── News list (dense) + rail (weekly + fortune) ── */}
+        <div className="hd-cols">
           <div>
-            <div className="hp-section-header" style={{ marginTop: 0 }}>
-              <span className="hp-section-header__label">{isChinese ? '最新新闻 · LATEST' : 'Latest news'}</span>
-              <span className="hp-section-header__line" />
-              <button className="hp-link" onClick={() => handleNavigate('news')}>
-                {isChinese ? '查看全部 →' : 'View all →'}
-              </button>
+            <div className="hd-sec">
+              <span className="hd-sec__l">{isChinese ? '最新新闻 · LATEST' : 'Latest news'}</span>
+              <span className="hd-sec__rule" />
+              <button className="hd-sec__more" onClick={() => handleNavigate('news')}>{isChinese ? '查看全部 →' : 'View all →'}</button>
             </div>
-            {newsLoading ? (
-              <div className="hp-empty">{isChinese ? '加载中…' : 'Loading…'}</div>
-            ) : news.length === 0 ? (
-              <div className="hp-empty">{isChinese ? '暂无新闻' : 'No news available'}</div>
-            ) : (
-              <div className="hp-news-list">
-                {news.map((item) => (
-                  <article
-                    key={item.id}
-                    className="hp-news-item"
-                    onClick={() => item.url && window.open(item.url, '_blank')}
-                  >
-                    <p className="hp-news-item__title">{item.title}</p>
-                    <p className="hp-news-item__summary">{getDisplayContent(item)}</p>
-                    <div className="hp-news-item__meta">
-                      {item.source && <span className="hp-news-item__source">{item.source}</span>}
-                      {item.source && <span className="hp-dot" />}
-                      <span className="hp-news-item__time">{formatTime(item.published_at)}</span>
-                      {item.sentiment && (
-                        <span className={`hp-badge ${getSentimentClass(item.sentiment)}`}>
-                          {getSentimentLabel(item.sentiment)}
-                        </span>
-                      )}
-                      {item.impact_level && (
-                        <span className={`hp-badge ${getImpactClass(item.impact_level)}`}>
-                          {getImpactLabel(item.impact_level)}
-                        </span>
-                      )}
+            {newsLoading ? <div className="hd-empty">{isChinese ? '加载中…' : 'Loading…'}</div>
+              : news.length === 0 ? <div className="hd-empty">{isChinese ? '暂无新闻' : 'No news'}</div>
+                : news.map(item => (
+                  <article key={item.id} className="hd-nitem" onClick={() => item.url && window.open(item.url, '_blank')}>
+                    <span className="hd-nitem__t mono">{clock(item.published_at)}</span>
+                    <div>
+                      <p className="hd-nitem__title">{item.title}</p>
+                      <p className="hd-nitem__sum">{displayContent(item)}</p>
+                      <div className="hd-nitem__meta">
+                        {item.source && <span className="hd-src">{item.source}</span>}
+                        {item.sentiment && <span className={`hd-badge hd-badge--${sentClass(item.sentiment)}`}>{sentLabel(item.sentiment)}</span>}
+                        {item.impact_level && <span className={`hd-badge hd-badge--${impClass(item.impact_level)}`}>{impLabel(item.impact_level)}</span>}
+                      </div>
                     </div>
+                    <span />
                   </article>
                 ))}
-              </div>
-            )}
           </div>
 
-          {/* Weekly column */}
           <div>
-            <div className="hp-section-header" style={{ marginTop: 0 }}>
-              <span className="hp-section-header__label">{isChinese ? '本周周报 · WEEKLY' : 'This week'}</span>
-              <span className="hp-section-header__line" />
-            </div>
-            {weekly ? (
-              <div className="hp-weekly-card">
-                <div className="hp-weekly-card__head">
-                  <h3 className="hp-weekly-card__title">{weekly.title}</h3>
-                  <span className="hp-weekly-card__week">{weekly.date}</span>
-                </div>
-                <div className="hp-weekly-card__divider" />
-                <ul className="hp-weekly-card__bullets">
-                  {(weekly.nodes || []).slice(0, 4).map((node, i) => (
-                    <li key={node.id || i} className="hp-weekly-card__bullet">
-                      <span className="hp-weekly-card__dot" />
-                      <p>{node.title}{node.subtitle ? ` — ${node.subtitle}` : ''}</p>
-                    </li>
-                  ))}
-                </ul>
-                <div className="hp-weekly-card__divider" />
-                <button className="hp-link" onClick={() => handleNavigate('weekly-mindmap')}>
-                  {isChinese ? '阅读完整周报 →' : 'Read full report →'}
-                </button>
+            <div className="hd-rail">
+              <div className="hd-rail__h">
+                <h3>{isChinese ? '本周周报' : 'This week'}</h3>
+                {weekly && <span className="hd-rail__w mono">{weekly.date}</span>}
               </div>
-            ) : (
-              <div className="hp-weekly-card hp-weekly-card--empty">
-                <p className="hp-empty">{isChinese ? '暂无周报' : 'No weekly report yet'}</p>
-                <button className="hp-link" onClick={() => handleNavigate('weekly-mindmap')}>
-                  {isChinese ? '查看周报导图 →' : 'View weekly mindmap →'}
-                </button>
+              {weekly ? (
+                <>
+                  {(weekly.nodes || []).slice(0, 4).map((node, i) => (
+                    <div key={node.id || i} className="hd-bullet"><span className="hd-bullet__d" /><p>{node.title}{node.subtitle ? ` — ${node.subtitle}` : ''}</p></div>
+                  ))}
+                  <button className="hd-link" onClick={() => handleNavigate('weekly-mindmap')} style={{ marginTop: 10 }}>{isChinese ? '阅读完整周报 →' : 'Read full report →'}</button>
+                </>
+              ) : <p className="hd-empty" style={{ padding: '8px 0' }}>{isChinese ? '暂无周报' : 'No report yet'}</p>}
+            </div>
+
+            {gua && (
+              <div className="hd-rail">
+                <div className="hd-rail__h"><h3>{isChinese ? '今日一卦' : "Today's fortune"}</h3></div>
+                <div className="hd-fortune">
+                  <span className="hd-fortune__gua">{gua.char}</span>
+                  <div>
+                    <span className="hd-fortune__name">{gua.name}</span>
+                    <span className={`hd-fortune__tag t-${gua.tag}`}>{gua.tag}</span>
+                    <p className="hd-fortune__sub mono">{gua.sub}</p>
+                  </div>
+                </div>
+                <p className="hd-fortune__verdict">{gua.verdict}</p>
+                <button className="hd-link" onClick={() => handleNavigate('fortune')} style={{ marginTop: 10 }}>{isChinese ? '查看详情 →' : 'View details →'}</button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Fortune card */}
-        {gua && (
-          <section style={{ marginTop: 8 }}>
-            <div className="hp-section-header">
-              <span className="hp-section-header__label">{isChinese ? '今日一卦 · FORTUNE' : "Today's fortune"}</span>
-              <span className="hp-section-header__line" />
-            </div>
-            <div className="hp-fortune-banner">
-              <div className="hp-fortune-banner__shrine">{gua.char}</div>
-              <div className="hp-fortune-banner__body">
-                <div className="hp-fortune-banner__top">
-                  <span className="hp-fortune-banner__name">{gua.name}</span>
-                  <span className={`hp-fortune-tag hp-fortune-tag--${gua.tag}`}>{gua.tag}</span>
-                </div>
-                <p className="hp-fortune-banner__sub">{gua.sub}</p>
-                <p className="hp-fortune-banner__verdict">{gua.verdict}</p>
-              </div>
-              <button className="hp-btn hp-btn--outline hp-btn--sm" onClick={() => handleNavigate('fortune')}>
-                {isChinese ? '查看详情 →' : 'View details →'}
-              </button>
-            </div>
-          </section>
-        )}
-
-        {/* CTA — Open Account */}
-        <div className="hp-cta">
-          <div className="hp-cta__body">
-            <h3 className="hp-cta__title">
-              {isChinese ? '准备好开始交易了吗？' : 'Ready to start trading?'}
-            </h3>
-            <p className="hp-cta__desc">
-              {isChinese
-                ? '开户流程简单，最快 5 分钟完成，即可访问全球市场'
-                : 'Simple signup, as fast as 5 minutes, access global markets'}
-            </p>
+        {/* ── CTA ── */}
+        <div className="hd-cta">
+          <div>
+            <h3>{isChinese ? '准备好开始交易了吗?' : 'Ready to start trading?'}</h3>
+            <p>{isChinese ? '开户流程简单,最快 5 分钟完成,即可访问全球市场。' : 'Simple signup, as fast as 5 minutes, access global markets.'}</p>
           </div>
-          <a
-            href={OPEN_ACCOUNT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hp-btn hp-btn--outline hp-btn--sm"
-          >
-            {isChinese ? '立即开户 →' : 'Open account →'}
-          </a>
+          <a className="hd-btn" href={OPEN_ACCOUNT_URL} target="_blank" rel="noopener noreferrer">{isChinese ? '立即开户 →' : 'Open account →'}</a>
         </div>
 
-        {/* Footer */}
-        <footer className="hp-footer">
-          <p className="hp-footer__copy">
-            {isChinese
-              ? '© 2026 临象财经 · 投资有风险，入市需谨慎'
-              : '© 2026 LinXiangFinance · Investment involves risk'}
-          </p>
-          <div className="hp-footer__links">
-            {(isChinese
-              ? ['隐私政策', '使用条款', '联系我们']
-              : ['Privacy', 'Terms', 'Contact']
-            ).map(label => (
-              <button key={label} className="hp-footer__link">{label}</button>
-            ))}
-          </div>
-        </footer>
-
+        <div className="hd-footer">
+          <span>{isChinese ? '© 2026 临象财经 · 投资有风险,入市需谨慎' : '© 2026 LinXiangFinance · Investment involves risk'}</span>
+          <span>{(isChinese ? ['隐私政策', '使用条款', '联系我们'] : ['Privacy', 'Terms', 'Contact']).map(l => <a key={l}>{l}</a>)}</span>
+        </div>
       </div>
     </div>
   );
