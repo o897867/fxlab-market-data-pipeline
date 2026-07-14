@@ -89,3 +89,15 @@ async def iv_board():
 async def earnings_calendar():
     """未来两周 watchlist 财报排期。"""
     return _guard(panels.earnings_calendar)
+
+
+@router.get("/spark")
+async def spark(symbol: str = Query(...)):
+    """band chart 走势线：近期日线收盘 + 今日涨跌%（读 HV 缓存，不实时调 API）。"""
+    return _guard(panels.spark, symbol)
+
+
+@router.get("/expiries")
+async def expiries(symbol: str = Query(...)):
+    """该标的可选到期日列表 + 默认选择。"""
+    return _guard(panels.expiries, symbol)

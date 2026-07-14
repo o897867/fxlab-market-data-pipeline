@@ -131,7 +131,8 @@ def distribution(symbol: str, expiry: str | None = None, top: int = 10) -> dict:
     try:
         exp = _pick_expiry(con, "mart_strike_distribution", symbol, expiry)
         rows = con.execute(
-            "SELECT strike, call_oi, put_oi, max_pain_strike, pc_ratio, spot "
+            "SELECT strike, call_oi, put_oi, max_pain_strike, pc_ratio, spot, "
+            "call_wall_strike, call_wall_oi, put_wall_strike, put_wall_oi "
             "FROM main_marts.mart_strike_distribution WHERE underlying_code=? AND expiration=? "
             "ORDER BY strike", [symbol, exp]).fetchall()
         emrow = con.execute(
@@ -145,6 +146,11 @@ def distribution(symbol: str, expiry: str | None = None, top: int = 10) -> dict:
     max_pain = float(rows[0][3]) if rows[0][3] is not None else None
     pc_ratio = float(rows[0][4]) if rows[0][4] is not None else None
     pct = float(emrow[0]) if emrow and emrow[0] else 0.10
+
+    # 看涨墙/看跌墙：现价上方 call OI 最大处（阻力）、现价下方 put OI 最大处（支撑）。
+    # mart 已按 (标的,到期) 算好，全行重复同一值，取首行即可；单边无墙时为 None。
+    call_wall = _wall(rows[0][6], rows[0][7], spot)
+    put_wall = _wall(rows[0][8], rows[0][9], spot)
 
     # 价格网格：绕现价、按预期波动范围(±1.4σ)缩放，整数步长 → 均匀阶梯，无跳格。
     half = max(pct * 1.4, 0.05) * spot
@@ -169,17 +175,17 @@ def distribution(symbol: str, expiry: str | None = None, top: int = 10) -> dict:
     ladder = sorted(buckets, key=lambda b: b["strike"], reverse=True)
 
     name = _sym_short(symbol)
-    call_walls = sorted([b for b in buckets if b["side"] == "call" and b["is_wall"]],
-                        key=lambda b: b["call_oi"], reverse=True)[:1]
-    put_walls = sorted([b for b in buckets if b["side"] == "put" and b["is_wall"]],
-                       key=lambda b: b["put_oi"], reverse=True)[:2]
-    ca = f"${call_walls[0]['strike']:.0f} 挤满赌涨" if call_walls else ""
-    pa = "、".join(f"${b['strike']:.0f}" for b in put_walls)
-    headline = f"{name} 押得最多的:{ca}" + (f",{pa} 堆着买保护" if pa else "")
+    parts = []
+    if call_wall:
+        parts.append(f"上方 ${call_wall['strike']:.0f} 挤满赌涨(阻力)")
+    if put_wall:
+        parts.append(f"下方 ${put_wall['strike']:.0f} 堆着买保护(支撑)")
+    headline = (f"{name} 押得最多的:" + "、".join(parts)) if parts else f"{name} 暂无明显的墙"
     return {
         "symbol": symbol, "available": True, "expiry": str(exp), "headline": headline,
         "spot": spot, "step": step,
         "strikes": ladder, "max_pain": max_pain, "pc_ratio": round(pc_ratio, 3) if pc_ratio else None,
+        "call_wall": call_wall, "put_wall": put_wall,
         "sub": "未平仓量截至昨收;磁吸位（max pain）是临近到期股价容易被拉向的价位",
     }
 
@@ -285,6 +291,17 @@ def impact(symbol: str, expiry: str | None = None) -> dict:
     return {"symbol": symbol, "available": True, "expiry": str(exp), "spot": spot,
             "dte": int(dte), "items": items,
             "sub": "按可信度从高到低排：事件预期是市场定价的事实,GEX 只是基于假设的估算。"}
+
+
+def _wall(strike, oi, spot: float) -> dict | None:
+    """把 mart 的墙字段包成 {strike, oi, dist, dist_pct}；缺墙(该侧无行权价)返回 None。
+    dist_pct 带符号：看涨墙相对现价为正(上方)、看跌墙为负(下方)，前端可据此标阻力/支撑。"""
+    if strike is None or oi is None:
+        return None
+    strike = float(strike)
+    return {"strike": strike, "oi": int(oi),
+            "dist": round(strike - spot, 2),
+            "dist_pct": round((strike - spot) / spot, 4) if spot else None}
 
 
 def _nice_step(raw: float) -> float:
@@ -460,8 +477,10 @@ def daily_report() -> dict:
         maturing = ir is None or ir[3] is None or ir[3] < IV_RANK_MIN_DAYS
 
         # 贵贱：今天就能出（IV vs HV20），不必等 IV Rank 成熟
-        hv20 = (hvmap.get(code) or {}).get("hv20")
-        val = _valuation(iv_now, hv20)          # (级别, 码, 比值) 或 None
+        hvrow = hvmap.get(code) or {}
+        hv20 = hvrow.get("hv20")
+        change_pct = hvrow.get("change_pct")     # 今日涨跌%，切股器/头部用
+        val = _valuation(iv_now, hv20)           # (级别, 码, 比值) 或 None
         valuation = val[0] if val else None
         valuation_code = val[1] if val else None
 
@@ -476,7 +495,7 @@ def daily_report() -> dict:
         earnings_soon = days_to_earn is not None and 0 <= days_to_earn <= 14
 
         cards.append({
-            "symbol": code, "name": name,
+            "symbol": code, "name": name, "change_pct": change_pct,
             "valuation": valuation, "valuation_code": valuation_code,
             "iv_vs_hv": round(val[2], 3) if val else None,
             "iv_rank": rank, "iv_maturing": maturing, "data_days": days,
@@ -517,6 +536,30 @@ def iv_rank_board() -> dict:
         "data_days": int(r[4]), "maturing": r[4] is None or r[4] < IV_RANK_MIN_DAYS,
     } for r in rows]
     return {"count": len(board), "board": board}
+
+
+def spark(symbol: str) -> dict:
+    """band chart 用：近期日线收盘走势 + 今日涨跌%。读 realized_vol 的缓存，不实时调 API。"""
+    from option import realized_vol as _rv
+    hv = (_rv.load().get(symbol) or {})
+    closes = hv.get("closes_tail") or []
+    return {"symbol": symbol, "available": bool(closes),
+            "closes": closes, "change_pct": hv.get("change_pct")}
+
+
+def expiries(symbol: str) -> dict:
+    """该标的当前有数据的到期日列表（升序），供前端到期选择器。默认选 panels 的自动挑选值。"""
+    con = _con()
+    try:
+        rows = con.execute(
+            "SELECT DISTINCT expiration FROM main_marts.mart_expected_move "
+            "WHERE underlying_code=? ORDER BY expiration", [symbol]).fetchall()
+    finally:
+        con.close()
+    exps = [r[0] for r in rows]
+    default = _pick_expiry_py(exps)
+    return {"symbol": symbol, "expiries": [str(e) for e in exps],
+            "default": str(default) if default else None}
 
 
 def earnings_calendar() -> dict:

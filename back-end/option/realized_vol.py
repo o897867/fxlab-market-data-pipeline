@@ -57,14 +57,25 @@ def annualized_hv(closes: list[float], window: int) -> float | None:
     return math.sqrt(var) * math.sqrt(TRADING_DAYS)
 
 
+# 前端 band chart 走势线要的近期收盘根数（约一个月交易日）。
+SPARK_TAIL = 24
+
+
 def compute(code: str) -> dict | None:
     closes = fetch_closes(code)
     if not closes:
         return None
+    tail = [round(float(c), 2) for c in closes[-SPARK_TAIL:]]
+    # 今日涨跌% = 最新收盘 vs 前一根收盘
+    chg = None
+    if len(closes) >= 2 and closes[-2]:
+        chg = round((closes[-1] / closes[-2] - 1) * 100, 2)
     return {"hv20": annualized_hv(closes, 20),
             "hv60": annualized_hv(closes, 60),
             "hv252": annualized_hv(closes, 252),
-            "n_bars": len(closes)}
+            "n_bars": len(closes),
+            "closes_tail": tail,          # band chart 左侧真实走势
+            "change_pct": chg}            # 头部/切股器的今日涨跌
 
 
 def refresh(symbols=None, path: str = CACHE_PATH) -> dict:
