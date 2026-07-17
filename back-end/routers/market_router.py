@@ -4,6 +4,7 @@
 轻量内存缓存（60s），避免每次首页加载都打 API。代码均已 get_quotes 验过。
 """
 
+import os
 import time
 import logging
 
@@ -24,7 +25,8 @@ INDICES = [
     ("ICEUS:DX1!", "美元指数", "DXY"),
 ]
 _CACHE = {"at": 0.0, "data": None}
-_TTL = 60
+# hero 面板指数报价不需要秒级新鲜；5 分钟缓存，封顶首页流量带来的 API 调用。
+_TTL = int(os.getenv("MARKET_INDICES_TTL", "300"))
 
 
 def _fetch() -> list[dict]:

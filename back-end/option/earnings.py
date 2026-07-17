@@ -21,7 +21,8 @@ logger = logging.getLogger("option.earnings")
 EARN_URL = f"{config.IS_BASE_URL}/calendar/earnings"
 _HEADERS = {"Authorization": f"Bearer {config.IS_TOKEN}"}
 CACHE_PATH = os.path.join(config.SNAPSHOT_DIR, "..", "earnings.json")
-MAX_WEEKS = 14
+# 逐周扫描上限：覆盖一个季度多即可；远期财报（>10 周）不必逐周探，省调用。
+MAX_WEEKS = int(os.getenv("OPTION_EARNINGS_MAX_WEEKS", "10"))
 
 
 def _to_iso(v) -> str | None:

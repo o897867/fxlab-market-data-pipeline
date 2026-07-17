@@ -14,8 +14,15 @@ source venv/bin/activate 2>/dev/null || source .venv/bin/activate 2>/dev/null
 {
   echo "═════ $(date -u +'%Y-%m-%d %H:%M:%S UTC') OptionLens refresh ═════"
   python -m option.extract 2>&1
-  python -m option.earnings 2>&1        # 下次财报日缓存（事件预期用）
-  python -m option.realized_vol 2>&1    # 已实现波动 HV 缓存（IV 冷启动期的贵贱参照）
+  # 财报日与 HV 变化都慢，无需每日刷——只在周一跑一次，省 InsightSentry 用量（约 ÷5）。
+  # 缓存（earnings.json / hv.json）持久化，整周被 dbt/panels 复用。
+  if [ "$(date -u +%u)" = "1" ]; then
+    echo "── 周一：刷新财报日 + HV 缓存 ──"
+    python -m option.earnings 2>&1        # 下次财报日缓存（事件预期用）
+    python -m option.realized_vol 2>&1    # 已实现波动 HV 缓存（IV 冷启动期的贵贱参照）
+  else
+    echo "── 非周一：跳过财报/HV 刷新（复用上周一缓存）──"
+  fi
   cd "$ROOT/analytics/dbt" || exit 1
   export DBT_DUCKDB_PATH="$ROOT/analytics/dbt/eventstudy.duckdb"
   # 全部期权 marts 一次重建：之前漏了 mart_impact / mart_term_structure，
