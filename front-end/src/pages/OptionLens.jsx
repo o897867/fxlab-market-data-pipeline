@@ -371,6 +371,12 @@ const OptionLens = () => {
   (board && board.cards ? board.cards : []).forEach(c => { cardBy[c.symbol] = c; });
   const scale = priceScale(em, dist, spark);
 
+  // 「问问市场」目标价夹紧到期权可定价范围（行权价上下限）——超范围会返回边界 delta 的假象。
+  const kStrikes = (dist && dist.available) ? dist.strikes.map(s => s.strike) : [];
+  const kLo = kStrikes.length ? Math.min(...kStrikes) : null;
+  const kHi = kStrikes.length ? Math.max(...kStrikes) : null;
+  const clampK = v => (kLo != null && !isNaN(v)) ? Math.min(kHi, Math.max(kLo, v)) : v;
+
   // 默认目标价：预期上界（换股/换到期后自动重置）
   useEffect(() => { if (em && em.available) setTarget(String(Math.round(em.band_high))); }, [em]); // eslint-disable-line
   // 概率查询防抖
@@ -489,13 +495,15 @@ const OptionLens = () => {
                   <section className="card">
                     <p className="card__eyebrow"><span className="n">03</span><span>问问市场 · ASK THE MARKET</span><span className="rule" /></p>
                     <h2 className="ask__title">到了你的目标价,有多大可能?</h2>
-                    <p className="ask__sub">输入一个价格,看市场怎么定价它的概率。</p>
+                    <p className="ask__sub">输入一个价格,看市场怎么定价它的概率。{kLo != null && <>可输入 <span className="mono">${Math.round(kLo)}–${Math.round(kHi)}</span>（期权定价范围）。</>}</p>
                     <div className="ask__field">
                       <span className="ask__pfx">$</span>
-                      <input className="ask__input mono" inputMode="decimal" value={target} onChange={e => setTarget(e.target.value)} />
+                      <input className="ask__input mono" inputMode="decimal" value={target}
+                        onChange={e => setTarget(e.target.value)}
+                        onBlur={() => { const v = parseFloat(String(target).replace(/[^0-9.]/g, '')); if (!isNaN(v) && kLo != null) setTarget(String(Math.round(clampK(v)))); }} />
                       <div className="ask__steppers">
-                        <button className="ask__step" onClick={() => setTarget(t => String(Math.round((parseFloat(t) || 0) + 1)))}>+</button>
-                        <button className="ask__step" onClick={() => setTarget(t => String(Math.round((parseFloat(t) || 0) - 1)))}>−</button>
+                        <button className="ask__step" onClick={() => setTarget(t => String(Math.round(clampK((parseFloat(t) || 0) + 1))))}>+</button>
+                        <button className="ask__step" onClick={() => setTarget(t => String(Math.round(clampK((parseFloat(t) || 0) - 1))))}>−</button>
                       </div>
                     </div>
                     {prob && prob.available ? (() => {
