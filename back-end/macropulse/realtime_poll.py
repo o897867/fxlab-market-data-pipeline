@@ -1,12 +1,13 @@
 """DXY / US2Y 前向数据轮询器（REST，与 XAU 同机制，不碰 WS）。
 
-每 60s 拉 IS:DXY、IS:US02Y 的最近 1m bar，upsert 进 dxy/us2y_candles_1m。
+默认每小时拉一次 IS:DXY、IS:US02Y、CME:SR31! 覆盖整小时的 1m bar，upsert 进对应表。
 纯 additive：独立后台任务，不触碰现有 XAUDataManager 与那条单 WS 连接，
 零风险于线上黄金流。指数无 badj/settlement（futures-only），故省略。
 
 由 fapi 在启动时调 start_pollers(api_key, db_path) 拉起。
 """
 
+import os
 import asyncio
 import sqlite3
 import logging
@@ -17,13 +18,18 @@ import aiohttp
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.insightsentry.com/v3"
-POLL_INTERVAL = 60
+# 不需要实时：默认每小时拉一次，每次取覆盖整小时的 1m bar（dp = bar 数，不是小数位——
+# 已实测 dp 只影响返回条数、不影响价格精度）。_upsert 按 open_time INSERT OR REPLACE 去重，
+# 重叠 bar 自动合并，所以降频不丢任何一分钟数据。
+#   60s×3 只 = 4320 次/天  →  3600s×3 只 = 72 次/天（÷60）。
+POLL_INTERVAL = int(os.getenv("MACRO_POLL_INTERVAL", "3600"))
+_DP = int(os.getenv("MACRO_POLL_DP", str(POLL_INTERVAL // 60 + 10)))  # 每请求 bar 数 = 间隔分钟 + 10 缓冲
 
-# symbol -> (落库表, dp 小数位)。SOFR 期货价 ~96.x，需 dp=4 才能分辨半个 bp。
+# symbol -> 落库表
 INSTRUMENTS = {
-    "IS:DXY": ("dxy_candles_1m", 2),
-    "IS:US02Y": ("us2y_candles_1m", 2),
-    "CME:SR31!": ("sofr_candles_1m", 4),
+    "IS:DXY": "dxy_candles_1m",
+    "IS:US02Y": "us2y_candles_1m",
+    "CME:SR31!": "sofr_candles_1m",
 }
 
 
@@ -85,7 +91,8 @@ async def _poll_one(api_key: str, db_path: str, symbol: str, table: str, dp: int
 
 def start_pollers(api_key: str, db_path: str) -> list:
     """为每个标的起一个轮询任务。返回 task 列表（供停止）。"""
-    tasks = [asyncio.create_task(_poll_one(api_key, db_path, sym, tab, dp))
-             for sym, (tab, dp) in INSTRUMENTS.items()]
-    logger.info("✅ DXY/US2Y/SOFR 前向轮询已启动（REST，%ds 间隔）", POLL_INTERVAL)
+    tasks = [asyncio.create_task(_poll_one(api_key, db_path, sym, tab, _DP))
+             for sym, tab in INSTRUMENTS.items()]
+    logger.info("✅ DXY/US2Y/SOFR 前向轮询已启动（REST，%ds 间隔，dp=%d bar/请求 → %d 次/天）",
+                POLL_INTERVAL, _DP, len(INSTRUMENTS) * 86400 // POLL_INTERVAL)
     return tasks
